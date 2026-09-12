@@ -22,4 +22,12 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },
+  {
+    // The single boundary where untyped source JSON enters. `any` is the honest type for it;
+    // every mapper narrows it immediately, and the schema validates the result.
+    files: ['scripts/lib/raw.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 );

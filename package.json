@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "content:build": "tsx scripts/build-content.ts"
+    "content:build": "tsx scripts/build-content.ts",
+    "content:fetch": "tsx scripts/fetch-sources.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.1.6",

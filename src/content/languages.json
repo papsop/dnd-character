@@ -1,0 +1,97 @@
+[
+  {
+    "id": "abyssal",
+    "name": "Abyssal",
+    "text": []
+  },
+  {
+    "id": "celestial",
+    "name": "Celestial",
+    "text": []
+  },
+  {
+    "id": "common",
+    "name": "Common",
+    "text": []
+  },
+  {
+    "id": "common-sign-language",
+    "name": "Common Sign Language",
+    "text": []
+  },
+  {
+    "id": "deep-speech",
+    "name": "Deep Speech",
+    "text": []
+  },
+  {
+    "id": "draconic",
+    "name": "Draconic",
+    "text": []
+  },
+  {
+    "id": "druidic",
+    "name": "Druidic",
+    "text": []
+  },
+  {
+    "id": "dwarvish",
+    "name": "Dwarvish",
+    "text": []
+  },
+  {
+    "id": "elvish",
+    "name": "Elvish",
+    "text": []
+  },
+  {
+    "id": "giant",
+    "name": "Giant",
+    "text": []
+  },
+  {
+    "id": "gnomish",
+    "name": "Gnomish",
+    "text": []
+  },
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "text": []
+  },
+  {
+    "id": "halfling",
+    "name": "Halfling",
+    "text": []
+  },
+  {
+    "id": "infernal",
+    "name": "Infernal",
+    "text": []
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "text": []
+  },
+  {
+    "id": "primordial",
+    "name": "Primordial",
+    "text": []
+  },
+  {
+    "id": "sylvan",
+    "name": "Sylvan",
+    "text": []
+  },
+  {
+    "id": "thieves-cant",
+    "name": "Thieves' Cant",
+    "text": []
+  },
+  {
+    "id": "undercommon",
+    "name": "Undercommon",
+    "text": []
+  }
+]

@@ -1,0 +1,226 @@
+[
+  {
+    "id": "acolyte",
+    "name": "Acolyte",
+    "abilityOptions": [
+      "int",
+      "wis",
+      "cha"
+    ],
+    "skills": [
+      "insight",
+      "religion"
+    ],
+    "toolProficiency": "Calligrapher's Supplies",
+    "originFeat": "magic-initiate",
+    "equipment": [
+      {
+        "id": "acolyte-kit-a",
+        "label": "Calligrapher's Supplies, Book, 10 Parchment, Robe, Choose Holy Symbols, 8 GP",
+        "items": [
+          {
+            "itemId": "calligraphers-supplies",
+            "quantity": 1
+          },
+          {
+            "itemId": "book",
+            "quantity": 1
+          },
+          {
+            "itemId": "parchment",
+            "quantity": 10
+          },
+          {
+            "itemId": "robe",
+            "quantity": 1
+          }
+        ],
+        "gold": 8,
+        "pendingChoices": [
+          {
+            "prompt": "Choose Holy Symbols",
+            "categoryIds": [
+              "holy-symbols"
+            ],
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "acolyte-kit-b",
+        "label": "50 GP",
+        "items": [],
+        "gold": 50,
+        "pendingChoices": []
+      }
+    ]
+  },
+  {
+    "id": "criminal",
+    "name": "Criminal",
+    "abilityOptions": [
+      "dex",
+      "con",
+      "int"
+    ],
+    "skills": [
+      "sleight-of-hand",
+      "stealth"
+    ],
+    "toolProficiency": "Thieves' Tools",
+    "originFeat": "alert",
+    "equipment": [
+      {
+        "id": "criminal-kit-a",
+        "label": "2 Dagger, Thieves' Tools, Crowbar, 2 Pouch, Clothes, Traveler's, 16 GP",
+        "items": [
+          {
+            "itemId": "dagger",
+            "quantity": 2
+          },
+          {
+            "itemId": "thieves-tools",
+            "quantity": 1
+          },
+          {
+            "itemId": "crowbar",
+            "quantity": 1
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "itemId": "clothes-travelers",
+            "quantity": 1
+          }
+        ],
+        "gold": 16,
+        "pendingChoices": []
+      },
+      {
+        "id": "criminal-kit-b",
+        "label": "50 GP",
+        "items": [],
+        "gold": 50,
+        "pendingChoices": []
+      }
+    ]
+  },
+  {
+    "id": "sage",
+    "name": "Sage",
+    "abilityOptions": [
+      "con",
+      "int",
+      "wis"
+    ],
+    "skills": [
+      "arcana",
+      "history"
+    ],
+    "toolProficiency": "Calligrapher's Supplies",
+    "originFeat": "magic-initiate",
+    "equipment": [
+      {
+        "id": "sage-kit-a",
+        "label": "Quarterstaff, Calligrapher's Supplies, Book, 8 Parchment, Robe, 8 GP",
+        "items": [
+          {
+            "itemId": "quarterstaff",
+            "quantity": 1
+          },
+          {
+            "itemId": "calligraphers-supplies",
+            "quantity": 1
+          },
+          {
+            "itemId": "book",
+            "quantity": 1
+          },
+          {
+            "itemId": "parchment",
+            "quantity": 8
+          },
+          {
+            "itemId": "robe",
+            "quantity": 1
+          }
+        ],
+        "gold": 8,
+        "pendingChoices": []
+      },
+      {
+        "id": "sage-kit-b",
+        "label": "50 GP",
+        "items": [],
+        "gold": 50,
+        "pendingChoices": []
+      }
+    ]
+  },
+  {
+    "id": "soldier",
+    "name": "Soldier",
+    "abilityOptions": [
+      "str",
+      "dex",
+      "con"
+    ],
+    "skills": [
+      "athletics",
+      "intimidation"
+    ],
+    "toolProficiency": "Gaming Set",
+    "originFeat": "savage-attacker",
+    "equipment": [
+      {
+        "id": "soldier-kit-a",
+        "label": "Spear, Shortbow, 20 Arrows, Healer's Kit, Quiver, Clothes, Traveler's, undefined, 14 GP",
+        "items": [
+          {
+            "itemId": "spear",
+            "quantity": 1
+          },
+          {
+            "itemId": "shortbow",
+            "quantity": 1
+          },
+          {
+            "itemId": "arrows",
+            "quantity": 20
+          },
+          {
+            "itemId": "healers-kit",
+            "quantity": 1
+          },
+          {
+            "itemId": "quiver",
+            "quantity": 1
+          },
+          {
+            "itemId": "clothes-travelers",
+            "quantity": 1
+          }
+        ],
+        "gold": 14,
+        "pendingChoices": [
+          {
+            "prompt": "undefined",
+            "categoryIds": [
+              "gaming-sets"
+            ],
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "soldier-kit-b",
+        "label": "50 GP",
+        "items": [],
+        "gold": 50,
+        "pendingChoices": []
+      }
+    ]
+  }
+]
