@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { TEXT_REPLACEMENTS } from '../data/patches';
 import type { Ability, Dice } from '../../src/domain/schema/content';
 
 export const CACHE_DIR = join(process.cwd(), 'scripts', '.cache');
@@ -17,10 +18,28 @@ export function loadJson(relative: string): Raw[] {
   return JSON.parse(readFileSync(path, 'utf8')) as Raw[];
 }
 
+/** Replacements that actually fired, so a stale one fails the build. */
+export const usedTextReplacements = new Set<string>();
+
+/**
+ * The source was extracted from a PDF, so words are split across line breaks as "lev- els".
+ * Left alone, those artifacts print on the character sheet.
+ */
+export function normalizeText(value: string): string {
+  let text = value;
+  for (const [from, to] of TEXT_REPLACEMENTS) {
+    if (text.includes(from)) {
+      usedTextReplacements.add(from);
+      text = text.split(from).join(to);
+    }
+  }
+  return text.replace(/([A-Za-z])- ([a-z])/g, '$1$2');
+}
+
 /** Rules text arrives as one blob with newlines. The schema wants paragraphs. */
 export function paragraphs(desc: unknown): string[] {
   if (typeof desc !== 'string') return [];
-  return desc
+  return normalizeText(desc)
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.length > 0);

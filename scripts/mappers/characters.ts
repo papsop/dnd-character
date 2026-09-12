@@ -10,7 +10,7 @@ import type {
 } from '../../src/domain/schema/content';
 import { FEAT_GRANTS, GRANTS } from '../data/grants';
 import { BACKGROUND_TOOL, SPECIES_SIZE } from '../data/patches';
-import { levelFromIndex, paragraphs, toAbility, toId, type Raw } from '../lib/raw';
+import { levelFromIndex, normalizeText, paragraphs, toAbility, toId, type Raw } from '../lib/raw';
 
 /** Records which hand-written grant keys were actually matched, so stale ones can be reported. */
 export const usedGrantKeys = new Set<string>();
@@ -233,6 +233,45 @@ function primaryAbilities(c: Raw): CharClass['primaryAbility'] {
   return options.map((o: Raw) => toAbility(o.item.index));
 }
 
+const WORD_NUMBERS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+
+/**
+ * Levels granting an ASI or a feat. The level-4 feature's own text enumerates the rest
+ * ("You gain this feature again at Fighter levels 6, 8, 12, 14, and 16"), which is why this is read
+ * rather than hardcoded - Fighter and Rogue get extra ones.
+ */
+function featLevels(classFeatures: Raw[], classId: string): number[] {
+  const asi = classFeatures.find((f) => /ability score improvement/i.test(String(f.name)));
+  if (!asi) throw new Error(`${classId}: no Ability Score Improvement feature`);
+
+  const levels = new Set<number>([levelFromIndex(asi.level.index)]);
+  const text = normalizeText(String(asi.description)).replace(/\band\b/g, ' ');
+  const match = /again at [A-Za-z]+ levels? ([0-9,\s]+)/i.exec(text);
+  for (const part of (match?.[1] ?? '').split(',')) {
+    const level = Number(part.trim());
+    if (Number.isInteger(level) && level >= 1 && level <= 20) levels.add(level);
+  }
+  return [...levels].sort((a, b) => a - b);
+}
+
+/**
+ * Masteries usable at each level. Barbarian and Fighter scale and carry per-level counts upstream;
+ * the other mastery classes state a flat count in their feature text.
+ */
+function weaponMasteryByLevel(rows: Raw[], classFeatures: Raw[], classId: string): number[] {
+  const feature = classFeatures.find((f) => /^weapon mastery$/i.test(String(f.name)));
+  if (!feature) return Array.from({ length: 20 }, () => 0);
+
+  const fromLevel = levelFromIndex(feature.level.index);
+  const perLevel = rows.map((r) => Number(r.class_specific?.weapon_mastery ?? 0));
+  if (perLevel.some((n) => n > 0)) return perLevel;
+
+  const stated = /mastery properties of (\w+) kinds/i.exec(normalizeText(String(feature.description)));
+  const count = WORD_NUMBERS[String(stated?.[1] ?? '').toLowerCase()];
+  if (!count) throw new Error(`${classId}: cannot read a weapon mastery count from its feature text`);
+  return Array.from({ length: 20 }, (_, i) => (i + 1 >= fromLevel ? count : 0));
+}
+
 export function mapClasses(
   rawClasses: Raw[],
   rawLevels: Raw[],
@@ -253,9 +292,11 @@ export function mapClasses(
       (pc.from?.options ?? []).some((o: Raw) => String(o.item?.index ?? '').startsWith('skill-')),
     );
 
-    const features = rawFeatures
-      .filter((f) => String(f.class?.index) === classId)
-      .map((f) => feature(f, 'class', levelFromIndex(f.level.index)));
+    const ownFeatures = rawFeatures.filter((f) => String(f.class?.index) === classId);
+    const features = ownFeatures.map((f) => feature(f, 'class', levelFromIndex(f.level.index)));
+    const epicBoon = ownFeatures.find((f) => /epic boon/i.test(String(f.name)));
+    const levelRows = rawLevels.filter((r) => String(r.class.index) === classId && !r.subclass)
+      .sort((a, b) => Number(a.level) - Number(b.level));
 
     const sc = c.spellcasting;
 
@@ -285,6 +326,9 @@ export function mapClasses(
             },
           }
         : {}),
+      featLevels: featLevels(ownFeatures, classId),
+      ...(epicBoon ? { epicBoonLevel: levelFromIndex(epicBoon.level.index) } : {}),
+      weaponMasteryByLevel: weaponMasteryByLevel(levelRows, ownFeatures, classId),
       features,
       choices: [],
       levels,

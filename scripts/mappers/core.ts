@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 import type { itemSchema, masterySchema, namedTextSchema, skillSchema } from '../../src/domain/schema/content';
+import { ARMOR_TYPE } from '../data/patches';
 import { paragraphs, parseDice, toAbility, toGp, toId, type Raw } from '../lib/raw';
+
+/** Patch keys actually applied, so a patch upstream has since fixed fails the build. */
+export const usedArmorPatchKeys = new Set<string>();
 
 type Skill = z.infer<typeof skillSchema>;
 type NamedText = z.infer<typeof namedTextSchema>;
@@ -29,7 +33,15 @@ export function mapMasteries(raw: Raw[]): Mastery[] {
 
 const categories = (r: Raw): string[] => (r.equipment_categories ?? []).map((c: Raw) => String(c.index));
 
-function armorType(cats: string[]): 'light' | 'medium' | 'heavy' | 'shield' | null {
+function armorType(cats: string[], id: string): 'light' | 'medium' | 'heavy' | 'shield' | null {
+  const patch = ARMOR_TYPE[id];
+  if (patch) {
+    if (cats.includes(`${patch}-armor`)) {
+      throw new Error(`Armour ${id} is now categorised as ${patch} upstream - drop the patch`);
+    }
+    usedArmorPatchKeys.add(id);
+    return patch;
+  }
   if (cats.includes('shields')) return 'shield';
   if (cats.includes('light-armor')) return 'light';
   if (cats.includes('medium-armor')) return 'medium';
@@ -65,7 +77,7 @@ export function mapItems(raw: Raw[]): Item[] {
       };
     }
 
-    const armor = armorType(cats);
+    const armor = armorType(cats, id);
     if (armor) {
       const dexBonus = Boolean(r.armor_class?.dex_bonus);
       const maxBonus = r.armor_class?.max_bonus;

@@ -85,7 +85,7 @@ export const choiceSchema = z.object({
     }),
     z.object({
       kind: z.literal('ref'),
-      ref: z.enum(['skills', 'spells', 'masteries', 'feats', 'tools', 'languages']),
+      ref: z.enum(['skills', 'spells', 'weapons', 'feats', 'tools', 'languages']),
       ids: z.array(id).optional(),
     }),
   ]),
@@ -164,6 +164,12 @@ export const classSchema = z.object({
       ritual: z.boolean(),
     })
     .optional(),
+  /** Levels granting an Ability Score Improvement or a feat. Read from the class's own rules text. */
+  featLevels: z.array(z.number().int().min(1).max(20)),
+  /** Level granting an Epic Boon feat. 19 for every class in this ruleset, but read, not assumed. */
+  epicBoonLevel: z.number().int().min(1).max(20).optional(),
+  /** Weapon masteries usable at each level, index 0 = level 1. All zeros for classes without it. */
+  weaponMasteryByLevel: z.array(z.number().int().nonnegative()).length(20),
   features: z.array(featureSchema),
   choices: z.array(choiceSchema).default([]),
   levels: z.array(classLevelSchema).length(20),
@@ -215,7 +221,26 @@ export const spellSchema = z.object({
   damageRoll: z.string().optional(),
   damageTypes: z.array(z.string()).default([]),
   save: abilitySchema.optional(),
-  attack: z.enum(['melee', 'ranged']).optional(),
+  /**
+   * Whether casting it calls for a spell attack roll. The source records only that much - melee
+   * versus ranged is not distinguished - and the spell's own range line tells the player which.
+   */
+  attackRoll: z.boolean().default(false),
+  /**
+   * How the spell grows. Cantrips scale with character level, levelled spells with the slot used.
+   * Kept as data because the growth is not uniform - Fire Bolt gains dice, Eldritch Blast gains
+   * beams - and guessing a rule of thumb would print the wrong numbers on the sheet.
+   */
+  scaling: z
+    .array(
+      z.object({
+        kind: z.enum(['character-level', 'slot-level']),
+        at: z.number().int().positive(),
+        damageRoll: z.string().optional(),
+        targetCount: z.number().int().positive().optional(),
+      }),
+    )
+    .default([]),
   classes: z.array(id),
 });
 export type Spell = z.infer<typeof spellSchema>;

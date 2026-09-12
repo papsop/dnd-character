@@ -1062,7 +1062,7 @@
     "cost": 10,
     "weight": 12,
     "kind": "armor",
-    "armorType": "light",
+    "armorType": "medium",
     "baseAc": 12,
     "dexCap": 2,
     "stealthDisadvantage": false

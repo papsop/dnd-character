@@ -10,9 +10,9 @@ import { join } from 'node:path';
 import { contentPackSchema, type ContentPack } from '../src/domain/schema/content';
 import { SRD_ATTRIBUTION } from '../src/attribution';
 import { FEAT_GRANTS, GRANTS } from './data/grants';
-import { BACKGROUND_TOOL, SPECIES_SIZE, SPELL_TEXT } from './data/patches';
+import { ARMOR_TYPE, BACKGROUND_TOOL, SPECIES_SIZE, SPELL_TEXT } from './data/patches';
 import { loadJson, sortById } from './lib/raw';
-import { mapItems, mapMasteries, mapNamedText, mapSkills } from './mappers/core';
+import { mapItems, mapMasteries, mapNamedText, mapSkills, usedArmorPatchKeys } from './mappers/core';
 import {
   mapBackgrounds,
   mapClasses,
@@ -202,6 +202,9 @@ for (const key of Object.keys(SPECIES_SIZE)) {
 }
 for (const key of Object.keys(BACKGROUND_TOOL)) {
   if (!usedPatchKeys.has(`background-tool:${key}`)) fail(`patches: background tool "${key}" is no longer needed`);
+}
+for (const key of Object.keys(ARMOR_TYPE)) {
+  if (!usedArmorPatchKeys.has(key)) fail(`patches: armour type "${key}" is no longer needed`);
 }
 for (const key of Object.keys(SPELL_TEXT)) {
   if (!usedSpellPatchKeys.has(key)) fail(`patches: spell text "${key}" is no longer needed`);

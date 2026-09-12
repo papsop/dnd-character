@@ -18,6 +18,26 @@ export const BACKGROUND_TOOL: Record<string, string> = {
   soldier: 'Gaming Set',
 };
 
+/**
+ * Literal text fixes applied before de-hyphenation.
+ *
+ * The source was extracted from a PDF and carries line-break hyphenation ("lev- els", "Mar- tial")
+ * that would otherwise print onto a character sheet. De-hyphenation merges those automatically, but
+ * a few hyphens are really em-dashes and must not be merged - they are listed here.
+ */
+export const TEXT_REPLACEMENTS: [string, string][] = [
+  ['at a time- the most recent one', 'at a time—the most recent one'],
+];
+
+/**
+ * Armour the source files under the wrong category. SRD 5.2.1: Hide Armor is Medium armour - the
+ * source lists it as Light while giving it a Medium armour Dex cap, so its own data disagrees with
+ * its own label. The label is what proficiency checks read, so it has to be right.
+ */
+export const ARMOR_TYPE: Record<string, 'light' | 'medium' | 'heavy' | 'shield'> = {
+  'hide-armor': 'medium',
+};
+
 /** Spells the source ships with an empty description. Text transcribed from the SRD 5.2.1. */
 export const SPELL_TEXT: Record<string, string[]> = {
   'greater-invisibility': ['A creature you touch has the Invisible condition until the spell ends.'],

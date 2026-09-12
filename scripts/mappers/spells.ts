@@ -14,6 +14,25 @@ function spellText(id: string, desc: unknown): string[] {
   return patch;
 }
 
+/** casting_options carry both cantrip growth (player_level_N) and upcasting (slot_level_N). */
+function scaling(r: Raw): Spell['scaling'] {
+  const entries: Spell['scaling'] = [];
+  for (const option of r.casting_options ?? []) {
+    const match = /^(player|slot)_level_(\d+)$/.exec(String(option.type));
+    if (!match) continue;
+    const damageRoll = option.damage_roll ? String(option.damage_roll) : undefined;
+    const targetCount = option.target_count ? Number(option.target_count) : undefined;
+    if (!damageRoll && !targetCount) continue;
+    entries.push({
+      kind: match[1] === 'player' ? 'character-level' : 'slot-level',
+      at: Number(match[2]),
+      ...(damageRoll ? { damageRoll } : {}),
+      ...(targetCount ? { targetCount } : {}),
+    });
+  }
+  return entries.sort((a, b) => a.at - b.at);
+}
+
 function components(r: Raw): Spell['components'] {
   const material = r.material ? String(r.material_specified ?? '').trim() : '';
   return {
@@ -21,12 +40,6 @@ function components(r: Raw): Spell['components'] {
     s: Boolean(r.somatic),
     ...(material ? { m: material } : {}),
   };
-}
-
-function attackKind(value: unknown): 'melee' | 'ranged' | undefined {
-  const attack = String(value ?? '').toLowerCase();
-  if (attack === 'melee' || attack === 'ranged') return attack;
-  return undefined;
 }
 
 /** Casting time reads better with its trigger attached: "Reaction, which you take when...". */
@@ -38,7 +51,6 @@ function castingTime(r: Raw): string {
 
 export function mapSpells(raw: Raw[]): Spell[] {
   return raw.map((r): Spell => {
-    const attack = attackKind(r.attack_roll);
     const save = r.saving_throw_ability ? toAbility(r.saving_throw_ability) : undefined;
     const higher = String(r.higher_level ?? '').trim();
     const damage = String(r.damage_roll ?? '').trim();
@@ -60,7 +72,8 @@ export function mapSpells(raw: Raw[]): Spell[] {
       ...(damage ? { damageRoll: damage } : {}),
       damageTypes: (r.damage_types ?? []).map((d: Raw) => String(typeof d === 'string' ? d : d.name)),
       ...(save ? { save } : {}),
-      ...(attack ? { attack } : {}),
+      attackRoll: Boolean(r.attack_roll),
+      scaling: scaling(r),
       classes: (r.classes ?? []).map((c: Raw) => toId(c.key ?? c.name)),
     };
   });
