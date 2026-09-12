@@ -2,9 +2,16 @@ import { Text, View } from '@react-pdf/renderer';
 import type { CharacterSheet } from '../domain/schema/character';
 import type { Spell } from '../domain/schema/content';
 import { cantripDamage } from '../domain/derive/attacks';
+import { condenseParagraphs } from '../domain/condense';
 import { iconFor } from '../icons/paths';
 import { Icon, Label, Pips, SectionHeader } from './components';
 import { colors, fonts, sizes, signed, styles } from './theme';
+
+/**
+ * Characters of text kept per spell in condensed mode. Enough for the opening rule and usually the
+ * follow-up sentence; short enough that a full caster's spells stay a readable reference.
+ */
+const SPELL_TEXT_BUDGET = 420;
 
 /**
  * One entry per cantrip and prepared spell, grouped by level. An entry never splits across a page
@@ -97,6 +104,12 @@ function SpellEntry({ spell, sheet }: { spell: Spell; sheet: CharacterSheet }) {
   const scaled = spell.level === 0 ? cantripDamage(spell, sheet.identity.level) : undefined;
   const damage = scaled?.damage ?? spell.damageRoll;
 
+  // Condensed is the default: printed in full, a dozen spells swallow the whole booklet.
+  const body =
+    sheet.sheetOptions.spellDetail === 'full'
+      ? { text: spell.text, truncated: false }
+      : condenseParagraphs(spell.text, SPELL_TEXT_BUDGET);
+
   const effect = [
     damage ? `${damage} ${spell.damageTypes[0]?.toLowerCase() ?? ''}`.trim() : '',
     spell.save ? `${spell.save.toUpperCase()} save` : '',
@@ -124,13 +137,19 @@ function SpellEntry({ spell, sheet }: { spell: Spell; sheet: CharacterSheet }) {
         <Text style={{ fontFamily: fonts.bodyBold, fontSize: sizes.small }}>{effect}</Text>
       ) : null}
 
-      {spell.text.map((paragraph, index) => (
+      {body.text.map((paragraph, index) => (
         <Text key={index} style={{ fontSize: sizes.small }}>
           {paragraph}
         </Text>
       ))}
 
-      {spell.atHigherLevels ? (
+      {body.truncated ? (
+        <Text style={{ fontSize: sizes.label, color: colors.muted }}>
+          Shortened to fit - see the rules for the rest.
+        </Text>
+      ) : null}
+
+      {spell.atHigherLevels && !body.truncated ? (
         <Text style={{ fontSize: sizes.tiny, color: colors.muted }}>
           Higher levels: {spell.atHigherLevels}
         </Text>

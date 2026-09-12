@@ -2,10 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { contentPack } from '../content';
 import { deriveSheet } from '../domain/derive';
-import type { CharacterBuild, CharacterSheet } from '../domain/schema/character';
+import { characterBuildSchema, type CharacterBuild, type CharacterSheet } from '../domain/schema/character';
 import type { Ability } from '../domain/schema/content';
 
-const emptyScores: Record<Ability, number> = { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 };
+/** 0 means "not assigned yet". The standard array's real floor is 8, so the two must differ. */
+const emptyScores: Record<Ability, number> = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
 
 export function newCharacter(): CharacterBuild {
   return {
@@ -22,6 +23,7 @@ export function newCharacter(): CharacterBuild {
     equipment: [],
     currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
     hp: {},
+    sheetOptions: { spellDetail: 'condensed' },
     details: {},
   };
 }
@@ -70,6 +72,21 @@ export const useCharacterStore = create<CharacterStore>()(
       name: STORAGE_KEY,
       // Only the build is persisted - the derived sheet is recomputed, never stored.
       partialize: (state) => ({ build: state.build }),
+      /**
+       * Stored JSON is untrusted: it may come from an older version of the app, a hand-edited
+       * localStorage, or a half-written save. Parsing it through the schema fills in defaults and
+       * rejects anything malformed, because the alternative is the engine reading an undefined
+       * field and white-screening the whole app on load.
+       */
+      merge: (persisted, current) => {
+        const stored = (persisted as { build?: unknown } | undefined)?.build;
+        const parsed = characterBuildSchema.safeParse(stored);
+        if (parsed.success) return { ...current, build: parsed.data };
+        if (stored !== undefined) {
+          console.warn('Discarding an unreadable saved character', parsed.error.issues);
+        }
+        return current;
+      },
     },
   ),
 );

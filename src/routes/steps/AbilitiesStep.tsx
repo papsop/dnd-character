@@ -10,7 +10,9 @@ import {
   pointBuySpend,
 } from '../../domain/derive/abilities';
 import { ABILITIES, type Ability } from '../../domain/schema/content';
+import { recommendedArray, recommendedBackgroundBonuses, rolledArray } from '../../domain/recommend';
 import { useBuild, useCharacterStore, useSheet } from '../../store/characterStore';
+import { useState } from 'react';
 
 const ABILITY_NAMES: Record<Ability, string> = {
   str: 'Strength',
@@ -34,7 +36,41 @@ export function AbilitiesStep() {
 
   const { method, base, backgroundBonuses } = build.abilities;
   const background = contentPack.backgrounds.find((b) => b.id === build.backgroundId);
+  const charClass = contentPack.classes.find((c) => c.id === build.classId);
   const spent = pointBuySpend(base);
+  const [rolls, setRolls] = useState<{ total: number; dice: number[]; dropped: number }[]>([]);
+
+  /** One click to a complete, legal, class-appropriate spread. Everything stays editable. */
+  const applyRecommended = () => {
+    if (!charClass) return;
+    const scores = recommendedArray(charClass);
+    const bonuses = background
+      ? recommendedBackgroundBonuses(charClass, background.abilityOptions)
+      : {};
+    setRolls([]);
+    update((draft) => ({
+      ...draft,
+      abilities: {
+        ...draft.abilities,
+        method: 'standard-array',
+        base: scores,
+        backgroundBonuses: bonuses,
+      },
+    }));
+  };
+
+  const roll = () => {
+    if (!charClass) return;
+    const { scores, rolls: thrown } = rolledArray(charClass);
+    setRolls(thrown);
+    const bonuses = background
+      ? recommendedBackgroundBonuses(charClass, background.abilityOptions)
+      : {};
+    update((draft) => ({
+      ...draft,
+      abilities: { ...draft.abilities, method: 'manual', base: scores, backgroundBonuses: bonuses },
+    }));
+  };
 
   const setScore = (ability: Ability, value: number) =>
     update((draft) => ({
@@ -60,6 +96,45 @@ export function AbilitiesStep() {
         Pick a method, assign your scores, then apply your background&apos;s bonuses. Nothing may end
         up above 20.
       </Hint>
+
+      <div className="border-parchment-200 dark:border-ink-700 flex flex-wrap items-center gap-3 rounded-lg border p-3">
+        <button
+          type="button"
+          onClick={applyRecommended}
+          disabled={!charClass}
+          className="bg-accent-500 text-parchment-50 rounded px-3 py-2 text-sm font-semibold disabled:opacity-40"
+        >
+          Fill in a recommended spread
+        </button>
+        <button
+          type="button"
+          onClick={roll}
+          disabled={!charClass}
+          className="border-parchment-200 hover:border-accent-400 dark:border-ink-700 rounded border px-3 py-2 text-sm disabled:opacity-40"
+        >
+          Roll 4d6, drop the lowest
+        </button>
+        <p className="text-ink-500 flex-1 text-xs">
+          {charClass
+            ? `Assigns the best scores to what a ${charClass.name} actually uses. Change anything you like afterwards.`
+            : 'Choose a class first and this will fill itself in.'}
+        </p>
+      </div>
+
+      {rolls.length > 0 ? (
+        <div className="text-ink-500 flex flex-wrap gap-2 text-xs">
+          {rolls.map((entry, index) => (
+            <span
+              key={index}
+              className="border-parchment-200 dark:border-ink-700 rounded border px-2 py-1"
+              title={`Dropped the ${entry.dropped}`}
+            >
+              <strong className="text-ink-900 dark:text-parchment-100">{entry.total}</strong>{' '}
+              {entry.dice.join(' ')}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {METHODS.map((option) => (
@@ -134,7 +209,8 @@ export function AbilitiesStep() {
                       onChange={(e) => setScore(ability, Number(e.target.value))}
                       aria-label={`${ABILITY_NAMES[ability]} base score`}
                     >
-                      <option value={8}>—</option>
+                      {/* 0, not 8 - otherwise a deliberate 8 is indistinguishable from unassigned. */}
+                      <option value={0}>—</option>
                       {STANDARD_ARRAY.map((value) => (
                         <option
                           key={value}

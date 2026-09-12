@@ -243,7 +243,21 @@ function validateAbilities(
   const { method, base, backgroundBonuses } = build.abilities;
   const scores = ABILITIES.map((a) => base[a]);
 
-  if (method === 'point-buy') {
+  // 0 means the player has not assigned that score yet - unfinished, not illegal.
+  const unassigned = ABILITIES.filter((ability) => base[ability] === 0);
+  if (unassigned.length > 0) {
+    add({
+      step: 'abilities',
+      field: 'base',
+      severity: 'incomplete',
+      message:
+        unassigned.length === ABILITIES.length
+          ? 'Assign your ability scores.'
+          : `Still to assign: ${unassigned.map((a) => a.toUpperCase()).join(', ')}.`,
+    });
+  }
+
+  if (method === 'point-buy' && unassigned.length === 0) {
     for (const ability of ABILITIES) {
       const score = base[ability];
       if (score < POINT_BUY_MIN || score > POINT_BUY_MAX) {
@@ -273,7 +287,7 @@ function validateAbilities(
     }
   }
 
-  if (method === 'standard-array') {
+  if (method === 'standard-array' && unassigned.length === 0) {
     const expected = [...STANDARD_ARRAY].sort((a, b) => a - b).join(',');
     const actual = [...scores].sort((a, b) => a - b).join(',');
     if (actual !== expected) {

@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { downloadSheet } from '../../pdf/download';
 import { Hint, SectionHeading } from '../../components/ui';
 import { Icon } from '../../components/Icon';
-import { useSheet } from '../../store/characterStore';
+import { useCharacterStore, useSheet } from '../../store/characterStore';
 import { ABILITIES } from '../../domain/schema/content';
 
 export function ReviewStep() {
   const sheet = useSheet();
+  const update = useCharacterStore((s) => s.update);
   const blocking = sheet.issues.length;
   const [status, setStatus] = useState<'idle' | 'working' | 'failed'>('idle');
 
@@ -159,6 +160,42 @@ export function ReviewStep() {
         <p className="text-ink-500 mt-2 text-xs">
           Two pages to print double-sided, plus a spell reference if you cast.
         </p>
+
+        {sheet.spellcasting ? (
+          <fieldset className="mt-4">
+            <legend className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+              Spell descriptions
+            </legend>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {(
+                [
+                  ['condensed', 'Condensed', 'Opening rule only. Keeps the sheet short.'],
+                  ['full', 'Full text', 'Every word. Adds pages.'],
+                ] as const
+              ).map(([value, label, hint]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={sheet.sheetOptions.spellDetail === value}
+                  onClick={() =>
+                    update((draft) => ({
+                      ...draft,
+                      sheetOptions: { ...draft.sheetOptions, spellDetail: value },
+                    }))
+                  }
+                  className={
+                    sheet.sheetOptions.spellDetail === value
+                      ? 'border-accent-500 bg-accent-500/10 rounded border px-3 py-1.5 text-sm'
+                      : 'border-parchment-200 dark:border-ink-700 rounded border px-3 py-1.5 text-sm'
+                  }
+                >
+                  {label}
+                  <span className="text-ink-500 ml-1 text-xs">{hint}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
         {status === 'failed' ? (
           <p className="text-accent-500 mt-2 text-sm">
             Something went wrong building the PDF. Try again, and if it keeps failing the browser

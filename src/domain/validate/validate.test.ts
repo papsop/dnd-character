@@ -275,3 +275,44 @@ describe('a finished character', () => {
     expect(messages(build).some((m) => /Give your character a name/.test(m))).toBe(true);
   });
 });
+
+describe('unassigned ability scores', () => {
+  const unassigned = (base: Partial<Record<'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha', number>>) =>
+    makeBuild({
+      abilities: {
+        method: 'standard-array',
+        base: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0, ...base },
+        backgroundBonuses: { str: 2, dex: 1 },
+        improvements: [],
+      },
+    });
+
+  it('is reported as unfinished, not illegal', () => {
+    const build = unassigned({});
+    expect(errorsOf(build).some((i) => /standard array/i.test(i.message))).toBe(false);
+    expect(messages(build).some((m) => /Assign your ability scores/.test(m))).toBe(true);
+  });
+
+  it('names the scores still outstanding', () => {
+    const build = unassigned({ str: 15, dex: 14, con: 13, int: 12 });
+    expect(messages(build).some((m) => /Still to assign: WIS, CHA/.test(m))).toBe(true);
+  });
+
+  it('goes quiet once every score is assigned', () => {
+    const build = unassigned({ str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 });
+    expect(messages(build).some((m) => /to assign/i.test(m))).toBe(false);
+    expect(hasError(build, /standard array/i)).toBe(false);
+  });
+
+  it('does not complain about point buy until the scores exist', () => {
+    const build = makeBuild({
+      abilities: {
+        method: 'point-buy',
+        base: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+        backgroundBonuses: { str: 2, dex: 1 },
+        improvements: [],
+      },
+    });
+    expect(hasError(build, /Point buy allows/)).toBe(false);
+  });
+});

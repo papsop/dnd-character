@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { StepNav } from '../components/StepNav';
 import { iconFor } from '../icons/paths';
 import { useBuild, useSheet } from '../store/characterStore';
 import { WIZARD_STEPS } from '../domain/schema/character';
@@ -28,6 +29,13 @@ export function BuildLayout() {
   const steps = STEPS.filter((step) => step !== 'spells' || isCaster);
 
   const issueCountFor = (step: string) => sheet.issues.filter((i) => i.step === step).length;
+
+  // Which step we are on, and what sits either side of it. Spells drops out for non-casters, so
+  // Next has to skip it rather than lead somewhere empty.
+  const current = steps.find((step) => location.pathname === `/build/${step}`);
+  const index = current ? steps.indexOf(current) : -1;
+  const previousStep = index > 0 ? steps[index - 1] : undefined;
+  const nextStep = index >= 0 && index < steps.length - 1 ? steps[index + 1] : undefined;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
@@ -61,6 +69,14 @@ export function BuildLayout() {
 
         <div key={location.pathname}>
           <Outlet />
+
+          {current !== 'review' ? (
+            <StepNav
+              {...(previousStep ? { previous: { to: `/build/${previousStep}`, label: STEP_LABELS[previousStep] } } : {})}
+              {...(nextStep ? { next: { to: `/build/${nextStep}`, label: STEP_LABELS[nextStep] } } : {})}
+              issueCount={current ? issueCountFor(current) : 0}
+            />
+          ) : null}
         </div>
       </div>
 

@@ -88,6 +88,17 @@ export const characterBuildSchema = z.object({
     })
     .default({}),
 
+  /** How the printed sheet is rendered. Preferences, not rules. */
+  sheetOptions: z
+    .object({
+      /**
+       * Full spell text turns a caster's sheet into six pages of wall-to-wall prose and buries the
+       * numbers you need mid-combat, so the condensed view is the default.
+       */
+      spellDetail: z.enum(['condensed', 'full']).default('condensed'),
+    })
+    .default({ spellDetail: 'condensed' }),
+
   notes: z.string().optional(),
 });
 
@@ -204,6 +215,7 @@ export type CharacterSheet = {
   currency: CharacterBuild['currency'];
   totalWeight: number;
   masteries: { weaponName: string; masteryName: string; text: string[] }[];
+  sheetOptions: CharacterBuild['sheetOptions'];
   details: CharacterBuild['details'];
   issues: Issue[];
 };

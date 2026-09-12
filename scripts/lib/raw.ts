@@ -40,8 +40,11 @@ export function normalizeText(value: string): string {
       .replace(/\*\*(.+?)\*\*/g, '$1')
       // One entry upstream has an unterminated marker, so sweep up any stragglers.
       .replace(/\*\*/g, '')
-      // The source also uses underscore italics for inline headings ("_Enlarge._").
+      // The source also uses underscore and single-asterisk italics for inline headings
+      // ("_Enlarge._", "*Beckon Air.*").
       .replace(/_([A-Za-z][^_]*?)_/g, '$1')
+      .replace(/\*([A-Za-z][^*]*?)\*/g, '$1')
+      .replace(/\*/g, '')
       .replace(/([A-Za-z])- ([a-z])/g, '$1$2')
   );
 }

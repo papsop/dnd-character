@@ -45,7 +45,26 @@ const wizard20 = (): CharacterBuild => {
   };
 };
 
+/** Worst case for the spell pages: the ten longest spells in the game, back to back. */
+const longSpellWizard = (): CharacterBuild => {
+  const build = level20('wizard', 'Ilzarai the Verbose');
+  const list = contentPack.spells.filter((s) => s.classes.includes('wizard'));
+  const longest = [...list]
+    .filter((s) => s.level > 0)
+    .sort((a, b) => b.text.join(' ').length - a.text.join(' ').length)
+    .slice(0, 12);
+  return {
+    ...build,
+    subclassId: 'evoker',
+    spells: {
+      cantrips: list.filter((s) => s.level === 0).slice(0, 5).map((s) => s.id),
+      prepared: longest.map((s) => s.id),
+    },
+  };
+};
+
 const FIXTURES: [string, CharacterBuild, number | null][] = [
+  ['wizard-20-long-spells', longSpellWizard(), null],
   ['fighter-1', fighterLevel1(), 2],
   ['wizard-5', wizardLevel5(), null],
   ['fighter-20', { ...level20('fighter', 'Brakka the Unbroken'), subclassId: 'champion' }, null],

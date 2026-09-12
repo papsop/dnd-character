@@ -117,6 +117,7 @@ export function deriveSheet(build: CharacterBuild, content: ContentPack): Charac
     currency: build.currency,
     totalWeight: equipment.reduce((total, line) => total + line.weight * line.quantity, 0),
     masteries,
+    sheetOptions: build.sheetOptions,
     details: build.details,
     issues: validateBuild(build, content),
   };

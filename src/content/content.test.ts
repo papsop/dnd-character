@@ -72,6 +72,10 @@ describe('printable text', () => {
     expect(allText().filter((text) => /_[A-Za-z][^_]*_/.test(text))).toEqual([]);
   });
 
+  it('carries no asterisks at all - every use upstream is a Markdown marker', () => {
+    expect(allText().filter((text) => text.includes('*'))).toEqual([]);
+  });
+
   it('carries no PDF line-break hyphenation artifacts', () => {
     const broken = allText().filter((text) => /[A-Za-z]- [a-z]/.test(text));
     expect(broken).toEqual([]);
