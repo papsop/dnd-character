@@ -7,6 +7,8 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   base: '/dnd-character/',
   plugins: [react(), tailwindcss()],
+  // Honour PORT so the preview harness can assign a free port.
+  server: process.env.PORT ? { port: Number(process.env.PORT), strictPort: true } : {},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

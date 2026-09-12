@@ -538,6 +538,10 @@
       "die": 4
     },
     "damageType": "Piercing",
+    "thrownRange": [
+      20,
+      60
+    ],
     "properties": [
       "Finesse",
       "Light",
@@ -559,6 +563,10 @@
     },
     "damageType": "Piercing",
     "range": [
+      20,
+      60
+    ],
+    "thrownRange": [
       20,
       60
     ],
@@ -1007,6 +1015,10 @@
       "die": 6
     },
     "damageType": "Slashing",
+    "thrownRange": [
+      20,
+      60
+    ],
     "properties": [
       "Light",
       "Thrown"
@@ -1128,6 +1140,10 @@
       "die": 6
     },
     "damageType": "Piercing",
+    "thrownRange": [
+      30,
+      120
+    ],
     "properties": [
       "Thrown"
     ],
@@ -1266,6 +1282,10 @@
       "die": 4
     },
     "damageType": "Bludgeoning",
+    "thrownRange": [
+      20,
+      60
+    ],
     "properties": [
       "Light",
       "Thrown"
@@ -2090,6 +2110,10 @@
       "count": 1,
       "die": 8
     },
+    "thrownRange": [
+      20,
+      60
+    ],
     "properties": [
       "Thrown",
       "Versatile"
@@ -2267,6 +2291,10 @@
       "count": 1,
       "die": 8
     },
+    "thrownRange": [
+      20,
+      60
+    ],
     "properties": [
       "Thrown",
       "Versatile"

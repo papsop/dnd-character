@@ -63,6 +63,8 @@ export function mapItems(raw: Raw[]): Item[] {
       const versatile = parseDice(r.two_handed_damage?.damage_dice);
       const normal = Number(r.range?.normal ?? 0);
       const long = Number(r.range?.long ?? 0);
+      const thrownNormal = Number(r.throw_range?.normal ?? 0);
+      const thrownLong = Number(r.throw_range?.long ?? 0);
       return {
         ...base,
         kind: 'weapon',
@@ -72,6 +74,7 @@ export function mapItems(raw: Raw[]): Item[] {
         damageType: String(r.damage?.damage_type?.name ?? '—'),
         ...(versatile ? { versatileDamage: versatile } : {}),
         ...(long > 0 ? { range: [normal, long] as [number, number] } : {}),
+        ...(thrownLong > 0 ? { thrownRange: [thrownNormal, thrownLong] as [number, number] } : {}),
         properties: (r.properties ?? []).map((p: Raw) => String(p.name)),
         ...(r.mastery ? { mastery: toId(r.mastery.index) } : {}),
       };

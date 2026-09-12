@@ -1,6 +1,7 @@
 import type { Ability, ContentPack, Dice, Item, Spell } from '../schema/content';
 import type { AbilityDetail, Attack, CharacterBuild } from '../schema/character';
 import { masteryChoiceId, classOf } from '../progression';
+import { isProficientWithWeapon } from '../weapons';
 import type { Proficiencies } from './proficiency';
 
 const signed = (n: number) => `${n >= 0 ? '+' : ''}${n}`;
@@ -30,17 +31,13 @@ export function isProficientWith(
   weapon: Extract<Item, { kind: 'weapon' }>,
   proficiencies: Proficiencies,
 ): boolean {
-  const name = weapon.name.toLowerCase();
-  return proficiencies.weapons.some((entry) => {
-    const value = entry.toLowerCase();
-    if (value === 'simple weapons') return weapon.category === 'simple';
-    if (value === 'martial weapons') return weapon.category === 'martial';
-    return value === name || value === `${name}s` || value.replace(/s$/, '') === name;
-  });
+  return isProficientWithWeapon(weapon, proficiencies.weapons);
 }
 
 function rangeText(weapon: Extract<Item, { kind: 'weapon' }>): string {
   if (weapon.range) return `Ranged ${weapon.range[0]}/${weapon.range[1]} ft.`;
+  // A thrown weapon is still a melee weapon; the player needs both numbers.
+  if (weapon.thrownRange) return `Melee 5 ft. or thrown ${weapon.thrownRange[0]}/${weapon.thrownRange[1]} ft.`;
   return weapon.rangeType === 'ranged' ? 'Ranged' : 'Melee 5 ft.';
 }
 

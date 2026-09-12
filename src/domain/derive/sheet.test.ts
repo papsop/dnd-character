@@ -187,3 +187,29 @@ describe('end-to-end sheets', () => {
     );
   });
 });
+
+describe('regressions found while using the app', () => {
+  it('prints both the melee and thrown range of a thrown weapon', () => {
+    const build = makeBuild({ equipment: [equip('javelin')] });
+    const javelin = deriveSheet(build, contentPack).attacks.find((a) => a.name === 'Javelin');
+    expect(javelin?.range).toBe('Melee 5 ft. or thrown 30/120 ft.');
+  });
+
+  it('prints a ranged weapon with its long range', () => {
+    const build = makeBuild({ classId: 'fighter', equipment: [equip('longbow')] });
+    const longbow = deriveSheet(build, contentPack).attacks.find((a) => a.name === 'Longbow');
+    expect(longbow?.range).toBe('Ranged 150/600 ft.');
+  });
+
+  it('lists a subclass feature once, not once per source', () => {
+    const build = makeBuild({ classId: 'fighter', subclassId: 'champion', level: 3 });
+    const names = deriveSheet(build, contentPack).features.map((f) => f.name);
+    expect(names.filter((n) => n === 'Improved Critical')).toHaveLength(1);
+    expect(names.filter((n) => n === 'Remarkable Athlete')).toHaveLength(1);
+  });
+
+  it('keeps subclass features out of the class list entirely', () => {
+    const withoutSubclass = deriveSheet(makeBuild({ classId: 'fighter', level: 3 }), contentPack);
+    expect(withoutSubclass.features.map((f) => f.name)).not.toContain('Improved Critical');
+  });
+});

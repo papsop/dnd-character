@@ -1,5 +1,6 @@
 import type { CharClass, Choice, ContentPack, Feature, Subclass } from './schema/content';
 import type { CharacterBuild } from './schema/character';
+import { isProficientWithWeapon, isWeapon } from './weapons';
 
 /**
  * What a character has access to at their level. Everything here is read from content data - the
@@ -63,13 +64,21 @@ export function choicesFor(build: CharacterBuild, content: ContentPack): Choice[
 
   const masteries = masteryCount(charClass, build.level);
   if (masteries > 0) {
+    // "weapons of your choice with which you have proficiency" - offering the rest would let a
+    // Rogue claim a Greataxe's mastery.
+    const usable = content.items
+      .filter(isWeapon)
+      .filter((weapon) => weapon.mastery !== undefined)
+      .filter((weapon) => isProficientWithWeapon(weapon, charClass.proficiencies.weapons))
+      .map((weapon) => weapon.id);
+
     choices.push({
       id: masteryChoiceId(charClass.id),
       prompt: `Choose ${masteries} weapons whose mastery property you can use`,
       count: masteries,
       level: 1,
       unique: true,
-      from: { kind: 'ref', ref: 'weapons' },
+      from: { kind: 'ref', ref: 'weapons', ids: usable },
     });
   }
 

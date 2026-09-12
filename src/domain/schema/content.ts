@@ -257,6 +257,8 @@ export const itemSchema = z.discriminatedUnion('kind', [
     damageType: z.string(),
     versatileDamage: diceSchema.optional(),
     range: z.tuple([z.number(), z.number()]).optional(),
+    /** Thrown weapons keep their melee reach and gain a throwing range; both print on the sheet. */
+    thrownRange: z.tuple([z.number(), z.number()]).optional(),
     properties: z.array(z.string()).default([]),
     mastery: id.optional(),
   }),

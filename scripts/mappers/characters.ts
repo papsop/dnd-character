@@ -292,7 +292,11 @@ export function mapClasses(
       (pc.from?.options ?? []).some((o: Raw) => String(o.item?.index ?? '').startsWith('skill-')),
     );
 
-    const ownFeatures = rawFeatures.filter((f) => String(f.class?.index) === classId);
+    // Subclass features are attributed to the class as well as the subclass upstream. Taking both
+    // would print Improved Critical twice on the sheet.
+    const ownFeatures = rawFeatures.filter(
+      (f) => String(f.class?.index) === classId && !f.subclass,
+    );
     const features = ownFeatures.map((f) => feature(f, 'class', levelFromIndex(f.level.index)));
     const epicBoon = ownFeatures.find((f) => /epic boon/i.test(String(f.name)));
     const levelRows = rawLevels.filter((r) => String(r.class.index) === classId && !r.subclass)
