@@ -15,6 +15,11 @@ describe('sheet filename', () => {
     expect(sheetFilename(deriveSheet(build, contentPack))).toBe('sir-reginald-o-malley-iii-fighter3.pdf');
   });
 
+  it('folds accents instead of dropping the name', () => {
+    const build = makeBuild({ name: 'Žofie Křížová', classId: 'cleric', level: 3 });
+    expect(sheetFilename(deriveSheet(build, contentPack))).toBe('zofie-krizova-cleric3.pdf');
+  });
+
   it('falls back when the character has no name yet', () => {
     const build = makeBuild({ name: '', classId: 'fighter' });
     expect(sheetFilename(deriveSheet(build, contentPack))).toBe('character-fighter1.pdf');

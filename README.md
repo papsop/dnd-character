@@ -15,6 +15,8 @@ Runs entirely in your browser. No account, no server, nothing uploaded.
 - A printable sheet built for the table — the numbers you need on your turn are the ones you can find
   fastest.
 - Characters saved in your browser, exportable as JSON, shareable by link.
+- Names and notes in any language written in the Latin alphabet - Czech, Polish, Hungarian,
+  Turkish - print correctly.
 
 ## The sheet
 
@@ -45,6 +47,10 @@ Game content is from the **System Reference Document 5.2.1**, used under
 
 All artwork is original. No official artwork, logos or trade dress are used. Character portraits are
 supplied by you at runtime and stay in your own browser.
+
+The printed sheet embeds **Lato** and **PT Serif**, both under the
+[SIL Open Font License 1.1](https://openfontlicense.org/) — see [src/pdf/fonts](src/pdf/fonts) for
+the licences, the subset ranges, and why the PDF standard fonts could not be used.
 
 Code and original art are MIT licensed — see [LICENSE](LICENSE). This project is not affiliated with
 or endorsed by Wizards of the Coast.

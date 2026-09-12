@@ -3,18 +3,33 @@
  *
  * Page counts are asserted, because the one thing that must never regress is the front/back
  * pairing: page 1 is the front, page 2 is the back, and anything else comes after.
+ *
+ * So is the text encoding. A sheet printed with the PDF standard fonts silently mangles anything
+ * outside Latin-1 - "Křížová" came out as "KYizova" - so one fixture is written in Czech and the
+ * output is checked for an embedded TrueType subset rather than a standard font.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createElement, type ReactElement } from 'react';
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
 import { contentPack } from '../src/content';
 import { deriveSheet } from '../src/domain/derive';
 import { CharacterSheetDocument } from '../src/pdf/CharacterSheetDocument';
+import { registerSheetFonts } from '../src/pdf/fonts/registerForNode';
 import type { CharacterBuild } from '../src/domain/schema/character';
 import { fighterLevel1, makeBuild, scores, wizardLevel5 } from '../src/domain/test/fixtures';
 
 const OUT = join(process.cwd(), 'tmp');
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * A stand-in portrait, so one fixture exercises the image path. JPEG because that is what the
+ * builder now stores: react-pdf embeds JPEG and PNG only, and a WebP portrait - which is what the
+ * builder used to produce - is dropped from the page with nothing but a console line to say so.
+ */
+const portraitDataUrl = (): string =>
+  `data:image/jpeg;base64,${readFileSync(join(HERE, 'fixtures/portrait.jpg')).toString('base64')}`;
 
 function level20(classId: string, name: string): CharacterBuild {
   return makeBuild({
@@ -63,7 +78,23 @@ const longSpellWizard = (): CharacterBuild => {
   };
 };
 
+/** Accented Latin all the way through: name, player, and the roleplay text on the back page. */
+const czechCleric = (): CharacterBuild => ({
+  ...makeBuild({ name: 'Žofie Křížová', classId: 'cleric', level: 3, backgroundId: 'acolyte' }),
+  subclassId: 'life-domain',
+  details: {
+    portraitDataUrl: portraitDataUrl(),
+    playerName: 'Tomáš Dvořák',
+    alignment: 'Lawful Good',
+    personalityTrait: 'Příliš žluťoučký kůň úpěl ďábelské ódy.',
+    ideal: 'Věrnost. Přísahu neporuším, ani když mě to bude stát život.',
+    bond: 'Můj řád mě vychoval — dlužím mu všechno.',
+    flaw: 'Nesnáším, když někdo zpochybňuje mé rozhodnutí.',
+  },
+});
+
 const FIXTURES: [string, CharacterBuild, number | null][] = [
+  ['cleric-3-czech', czechCleric(), null],
   ['wizard-20-long-spells', longSpellWizard(), null],
   ['fighter-1', fighterLevel1(), 2],
   ['wizard-5', wizardLevel5(), null],
@@ -73,6 +104,7 @@ const FIXTURES: [string, CharacterBuild, number | null][] = [
 ];
 
 async function main(): Promise<void> {
+  registerSheetFonts();
   mkdirSync(OUT, { recursive: true });
   let failed = false;
 
@@ -101,6 +133,20 @@ async function main(): Promise<void> {
         failed = true;
       }
     }
+    // The standard fonts are WinAnsi-encoded: if one is embedded, every accented letter on the
+    // page is already wrong, whatever it looks like in a viewer.
+    const standardFont = raw.match(/\/BaseFont\s*\/(Helvetica|Times|Courier)[^\s/>]*/);
+    if (standardFont) {
+      console.error(`    embeds the standard font ${standardFont[1]} - accented text will be mangled`);
+      failed = true;
+    }
+
+    // A portrait that never reached the page is the failure this is here to catch.
+    if (sheet.identity.portraitDataUrl && !/\/Subtype\s*\/Image/.test(raw)) {
+      console.error('    the portrait is missing from the PDF');
+      failed = true;
+    }
+
     const caster = sheet.spellcasting ? ' (caster)' : '';
     console.log(`  ${name.padEnd(12)} ${String(pages).padStart(2)} pages  ${(buffer.length / 1024).toFixed(0)} KB${caster}`);
 

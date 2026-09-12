@@ -1,4 +1,5 @@
 import { StyleSheet } from '@react-pdf/renderer';
+import { FONT_FAMILIES } from './fonts';
 
 /**
  * A4 at 10mm margins, in points. The sheet is used at a table, under bad light, mid-combat:
@@ -23,10 +24,15 @@ export const colors = {
 } as const;
 
 /**
- * react-pdf ships Helvetica, Times-Roman and Courier as standard PDF fonts. Using them means no
- * font files to bundle and nothing fetched at render time, which is what keeps the PDF offline.
+ * The sheet's typefaces. Embedded TrueType, not the PDF standard fonts - see ./fonts/index.ts for
+ * why a standard font cannot print a name like "Křížová".
  */
-export const fonts = { display: 'Times-Roman', displayBold: 'Times-Bold', body: 'Helvetica', bodyBold: 'Helvetica-Bold' } as const;
+export const fonts = {
+  display: FONT_FAMILIES.display,
+  displayBold: FONT_FAMILIES.displayBold,
+  body: FONT_FAMILIES.body,
+  bodyBold: FONT_FAMILIES.bodyBold,
+} as const;
 
 /**
  * Base scale, used by the back and spell pages where text volume is the constraint.
