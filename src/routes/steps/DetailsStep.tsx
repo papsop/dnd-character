@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { contentPack } from '../../content';
 import { Field, Hint, IssueList, SectionHeading, inputClass } from '../../components/ui';
+import { encodePortrait } from '../../pdf/portrait';
 import { useBuild, useCharacterStore, useSheet } from '../../store/characterStore';
 
 const TEXT_FIELDS = [
@@ -11,23 +13,11 @@ const TEXT_FIELDS = [
   ['backstory', 'Backstory'],
 ] as const;
 
-/** Portraits are downscaled before storing - a phone photo would fill localStorage on its own. */
-async function downscale(file: File, max = 512): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  const context = canvas.getContext('2d');
-  if (!context) throw new Error('Canvas unavailable');
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/webp', 0.8);
-}
-
 export function DetailsStep() {
   const build = useBuild();
   const sheet = useSheet();
   const update = useCharacterStore((s) => s.update);
+  const [portraitError, setPortraitError] = useState('');
 
   const setDetail = (key: string, value: string) =>
     update((draft) => ({ ...draft, details: { ...draft.details, [key]: value } }));
@@ -72,13 +62,31 @@ export function DetailsStep() {
             accept="image/*"
             className="text-sm"
             onChange={async (event) => {
-              const file = event.target.files?.[0];
+              const input = event.target;
+              const file = input.files?.[0];
               if (!file) return;
-              setDetail('portraitDataUrl', await downscale(file));
+              try {
+                setDetail('portraitDataUrl', await encodePortrait(file));
+                setPortraitError('');
+              } catch {
+                // Browsers decode what they decode: a HEIC straight off an iPhone, or a file the
+                // picker let through that is not an image at all, both land here. Saying so beats
+                // a file field that looks like it worked and a sheet that prints without a face.
+                setPortraitError('That image could not be read. Try a JPEG or PNG.');
+              } finally {
+                // Let the same file be picked again after a failure.
+                input.value = '';
+              }
             }}
           />
         </Field>
       </div>
+
+      {portraitError ? (
+        <p className="text-accent-500 text-sm" role="alert">
+          {portraitError}
+        </p>
+      ) : null}
 
       <Hint>
         Your portrait stays in this browser and in any file you export. It is never uploaded. Make
