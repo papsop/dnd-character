@@ -28,8 +28,16 @@ export function CharacterSheetDocument({ sheet }: { sheet: CharacterSheet }) {
 
   return (
     <Document title={title} author={sheet.identity.playerName ?? 'Character Forge'} creator="Character Forge">
-      {/* Front: everything used on your turn. Must stay one page at every level. */}
-      <Page size="A4" style={styles.page} wrap={false}>
+      {/*
+        Front: everything used on your turn.
+
+        No `wrap={false}` here. It does not mean "keep this to one page" - it shrinks the page itself
+        down to its content, producing a 595x517pt sheet instead of A4. Printers then scale that odd
+        page to fit the paper and rotate the following real A4 page to match, which is what made a
+        printed sheet come out sideways. The front page fits on its own; the fixture script asserts
+        both the page count and that every page is genuinely A4.
+      */}
+      <Page size="A4" style={styles.page}>
         <FrontPage sheet={sheet} conditions={contentPack.conditions.map((c) => c.name)} />
         {/*
           The footer has to be a direct child of the Page. Absolute positioning inside the content

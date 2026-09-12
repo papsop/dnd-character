@@ -35,7 +35,7 @@ describe('persisted build parsing', () => {
 
     expect(parsed.data.choices).toEqual({});
     expect(parsed.data.equipment).toEqual([]);
-    expect(parsed.data.sheetOptions.spellDetail).toBe('condensed');
+    expect(parsed.data.sheetOptions.detail).toBe('condensed');
 
     // The real assertion: the engine must not throw on it.
     expect(() => deriveSheet(parsed.data, contentPack)).not.toThrow();

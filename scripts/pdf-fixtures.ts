@@ -85,8 +85,22 @@ async function main(): Promise<void> {
     const path = join(OUT, `${name}.pdf`);
     writeFileSync(path, buffer);
 
+    const raw = buffer.toString('latin1');
+
     // Cheap and reliable: count the page objects the PDF declares.
-    const pages = (buffer.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+    const pages = (raw.match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+
+    // Every page must actually be A4. A page that is merely "about right" gets scaled by the print
+    // driver, which then rotates its neighbours to match and ruins a double-sided print.
+    const boxes = raw.match(/\/MediaBox\s*\[[^\]]*\]/g) ?? [];
+    for (const box of boxes) {
+      const [, , width, height] = (box.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+      const isA4 = Math.abs((width ?? 0) - 595.28) < 1 && Math.abs((height ?? 0) - 841.89) < 1;
+      if (!isA4) {
+        console.error(`    page is ${width}x${height}pt, not A4 (595.28x841.89)`);
+        failed = true;
+      }
+    }
     const caster = sheet.spellcasting ? ' (caster)' : '';
     console.log(`  ${name.padEnd(12)} ${String(pages).padStart(2)} pages  ${(buffer.length / 1024).toFixed(0)} KB${caster}`);
 

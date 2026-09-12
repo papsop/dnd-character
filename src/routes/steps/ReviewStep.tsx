@@ -161,41 +161,39 @@ export function ReviewStep() {
           Two pages to print double-sided, plus a spell reference if you cast.
         </p>
 
-        {sheet.spellcasting ? (
-          <fieldset className="mt-4">
-            <legend className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
-              Spell descriptions
-            </legend>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {(
-                [
-                  ['condensed', 'Condensed', 'Opening rule only. Keeps the sheet short.'],
-                  ['full', 'Full text', 'Every word. Adds pages.'],
-                ] as const
-              ).map(([value, label, hint]) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={sheet.sheetOptions.spellDetail === value}
-                  onClick={() =>
-                    update((draft) => ({
-                      ...draft,
-                      sheetOptions: { ...draft.sheetOptions, spellDetail: value },
-                    }))
-                  }
-                  className={
-                    sheet.sheetOptions.spellDetail === value
-                      ? 'border-accent-500 bg-accent-500/10 rounded border px-3 py-1.5 text-sm'
-                      : 'border-parchment-200 dark:border-ink-700 rounded border px-3 py-1.5 text-sm'
-                  }
-                >
-                  {label}
-                  <span className="text-ink-500 ml-1 text-xs">{hint}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        ) : null}
+        <fieldset className="mt-4">
+          <legend className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+            Rules text on the sheet
+          </legend>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {(
+              [
+                ['condensed', 'Condensed', 'Features and spells trimmed to what you need at the table.'],
+                ['full', 'Full text', 'Every word of every feature and spell. Adds several pages.'],
+              ] as const
+            ).map(([value, label, hint]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={sheet.sheetOptions.detail === value}
+                onClick={() =>
+                  update((draft) => ({
+                    ...draft,
+                    sheetOptions: { ...draft.sheetOptions, detail: value },
+                  }))
+                }
+                className={
+                  sheet.sheetOptions.detail === value
+                    ? 'border-accent-500 bg-accent-500/10 rounded border px-3 py-1.5 text-sm'
+                    : 'border-parchment-200 dark:border-ink-700 rounded border px-3 py-1.5 text-sm'
+                }
+              >
+                {label}
+                <span className="text-ink-500 ml-1 text-xs">{hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
         {status === 'failed' ? (
           <p className="text-accent-500 mt-2 text-sm">
             Something went wrong building the PDF. Try again, and if it keeps failing the browser

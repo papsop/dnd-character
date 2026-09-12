@@ -55,7 +55,7 @@ export function StatBox({
 /** The six ability blocks: modifier large (it is what gets rolled), score small beneath. */
 export function AbilityBox({ name, mod, score }: { name: string; mod: string; score: number }) {
   return (
-    <View style={[styles.box, { alignItems: 'center', paddingVertical: 2, marginBottom: 3 }]}>
+    <View style={[styles.box, { alignItems: 'center', paddingVertical: 5, marginBottom: 6 }]}>
       <Label>{name}</Label>
       <Text style={{ fontFamily: fonts.displayBold, fontSize: sizes.huge }}>{mod}</Text>
       <Text style={{ fontSize: sizes.tiny, color: colors.muted }}>({score})</Text>
@@ -103,7 +103,17 @@ export function Pips({ count, filled = false }: { count: number; filled?: boolea
 
 export type Column = { header: string; width: number; align?: 'left' | 'right' };
 
-export function Table({ columns, rows }: { columns: Column[]; rows: (string | number)[][] }) {
+export function Table({
+  columns,
+  rows,
+  minRows = 0,
+}: {
+  columns: Column[];
+  rows: (string | number)[][];
+  /** Pad out with blank ruled rows. Players pick things up mid-session and write them in. */
+  minRows?: number;
+}) {
+  const blanks = Math.max(0, minRows - rows.length);
   return (
     <View>
       <View style={styles.tableHeader}>
@@ -131,6 +141,9 @@ export function Table({ columns, rows }: { columns: Column[]; rows: (string | nu
             </Text>
           ))}
         </View>
+      ))}
+      {Array.from({ length: blanks }, (_, index) => (
+        <View key={`blank-${index}`} style={[styles.tableRow, { height: 14 }]} />
       ))}
     </View>
   );

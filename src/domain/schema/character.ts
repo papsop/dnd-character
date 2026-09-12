@@ -90,14 +90,26 @@ export const characterBuildSchema = z.object({
 
   /** How the printed sheet is rendered. Preferences, not rules. */
   sheetOptions: z
-    .object({
-      /**
-       * Full spell text turns a caster's sheet into six pages of wall-to-wall prose and buries the
-       * numbers you need mid-combat, so the condensed view is the default.
-       */
-      spellDetail: z.enum(['condensed', 'full']).default('condensed'),
-    })
-    .default({ spellDetail: 'condensed' }),
+    .preprocess(
+      // Older saves stored this as `spellDetail` and applied it to spells only.
+      (value) => {
+        if (value && typeof value === 'object' && !('detail' in value) && 'spellDetail' in value) {
+          return { detail: (value as { spellDetail: unknown }).spellDetail };
+        }
+        return value;
+      },
+      z.object({
+        /**
+         * How much rules text to print for spells and features.
+         *
+         * Full text turns the sheet into a rulebook reprint: a level-20 Wizard's Spellcasting
+         * feature alone runs to 17 paragraphs whose actual numbers are already printed on the front
+         * page. Condensed is the default because a character sheet is a play aid, not a rulebook.
+         */
+        detail: z.enum(['condensed', 'full']).default('condensed'),
+      }),
+    )
+    .default({ detail: 'condensed' }),
 
   notes: z.string().optional(),
 });

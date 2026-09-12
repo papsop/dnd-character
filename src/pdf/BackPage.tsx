@@ -1,6 +1,7 @@
 import { Text, View } from '@react-pdf/renderer';
 import type { CharacterSheet } from '../domain/schema/character';
 import type { Feature } from '../domain/schema/content';
+import { condenseParagraphs } from '../domain/condense';
 import { Field, Label, Pips, RuledLines, SectionHeader, Table } from './components';
 import { colors, fonts, sizes, styles } from './theme';
 
@@ -14,11 +15,40 @@ const SOURCE_TITLES: Record<Feature['source'], string> = {
 
 const ORDER: Feature['source'][] = ['class', 'subclass', 'species', 'feat', 'background'];
 
+/**
+ * Roughly how many characters of feature text the left column holds at the default body size.
+ * Measured by rendering, not calculated - react-pdf cannot measure text before laying it out.
+ */
+const COLUMN_TEXT_CAPACITY = 5400;
+
+/** Never trim below this: a two-line feature is useless. */
+const MIN_FEATURE_TEXT = 150;
+
+/** Never trim above this: past it the reader is skimming a rulebook, not a sheet. */
+const MAX_FEATURE_TEXT = 700;
+
+/**
+ * How much text each feature gets, shared out across however many the character has.
+ *
+ * A level-1 Fighter has eight features and room for nearly all of their text; a level-20 Wizard has
+ * twenty-one, including a Spellcasting feature of seventeen paragraphs whose actual numbers are
+ * already printed on the front page. Giving both the same fixed budget either wastes half a page or
+ * buries everything, so the budget adapts to the character.
+ */
+export function featureTextBudget(featureCount: number): number {
+  if (featureCount === 0) return MAX_FEATURE_TEXT;
+  const share = Math.round(COLUMN_TEXT_CAPACITY / featureCount);
+  return Math.min(MAX_FEATURE_TEXT, Math.max(MIN_FEATURE_TEXT, share));
+}
+
 export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize: number }) {
+  const condensed = sheet.sheetOptions.detail === 'condensed';
+  const budget = featureTextBudget(sheet.features.length + sheet.masteries.length);
+
   return (
     <View style={styles.grow}>
-      <View style={[styles.row, { gap: 8 }]}>
-        <View style={{ width: '55%' }}>
+      <View style={[styles.row, { gap: 10 }]}>
+        <View style={{ width: '52%' }}>
           {ORDER.map((source) => {
             const features = sheet.features.filter((f) => f.source === source);
             if (features.length === 0) return null;
@@ -26,7 +56,13 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
               <View key={source} style={{ marginBottom: 5 }}>
                 <SectionHeader icon="section-features">{SOURCE_TITLES[source]}</SectionHeader>
                 {features.map((feature) => (
-                  <FeatureBlock key={`${source}-${feature.id}`} feature={feature} bodySize={bodySize} />
+                  <FeatureBlock
+                    key={`${source}-${feature.id}`}
+                    feature={feature}
+                    bodySize={bodySize}
+                    condensed={condensed}
+                    budget={budget}
+                  />
                 ))}
               </View>
             );
@@ -40,7 +76,10 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
                   <Text style={{ fontFamily: fonts.bodyBold, fontSize: bodySize }}>
                     {mastery.masteryName} ({mastery.weaponName})
                   </Text>
-                  {mastery.text.map((paragraph, index) => (
+                  {(condensed
+                    ? condenseParagraphs(mastery.text, budget).text
+                    : mastery.text
+                  ).map((paragraph, index) => (
                     <Text key={index} style={{ fontSize: bodySize, color: colors.muted }}>
                       {paragraph}
                     </Text>
@@ -51,7 +90,7 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
           ) : null}
         </View>
 
-        <View style={{ width: '45%' }}>
+        <View style={{ width: '48%' }}>
           <SectionHeader>Proficiencies & Languages</SectionHeader>
           <ProficiencyLine label="Armour" values={sheet.proficiencies.armor} />
           <ProficiencyLine label="Weapons" values={sheet.proficiencies.weapons} />
@@ -80,9 +119,11 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
             ) : (
               <RuledLines count={6} />
             )}
-            <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 1 }}>
-              (worn) = currently equipped
-            </Text>
+            {sheet.equipment.some((line) => line.equipped) ? (
+              <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 1 }}>
+                (worn) = currently equipped
+              </Text>
+            ) : null}
           </View>
 
           <View style={{ marginTop: 5 }}>
@@ -116,13 +157,33 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
             <DetailBlock label="Appearance" value={sheet.details.appearance} lines={2} />
             <DetailBlock label="Backstory" value={sheet.details.backstory} lines={4} />
           </View>
+
+          {/* Players scribble on the sheet all session. Whatever is left over becomes room to write. */}
+          <View style={{ marginTop: 5, flexGrow: 1 }}>
+            <SectionHeader>Notes</SectionHeader>
+            <RuledLines count={10} />
+          </View>
         </View>
       </View>
     </View>
   );
 }
 
-function FeatureBlock({ feature, bodySize }: { feature: Feature; bodySize: number }) {
+function FeatureBlock({
+  feature,
+  bodySize,
+  condensed,
+  budget,
+}: {
+  feature: Feature;
+  bodySize: number;
+  condensed: boolean;
+  budget: number;
+}) {
+  const body = condensed
+    ? condenseParagraphs(feature.text, budget)
+    : { text: feature.text, truncated: false };
+
   return (
     <View style={{ marginBottom: 3 }} wrap={false}>
       <View style={[styles.row, { alignItems: 'center', gap: 3 }]}>
@@ -135,7 +196,7 @@ function FeatureBlock({ feature, bodySize }: { feature: Feature; bodySize: numbe
           </>
         ) : null}
       </View>
-      {feature.text.map((paragraph, index) => (
+      {body.text.map((paragraph, index) => (
         <Text key={index} style={{ fontSize: bodySize, color: colors.muted }}>
           {paragraph}
         </Text>

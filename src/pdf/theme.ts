@@ -28,7 +28,19 @@ export const colors = {
  */
 export const fonts = { display: 'Times-Roman', displayBold: 'Times-Bold', body: 'Helvetica', bodyBold: 'Helvetica-Bold' } as const;
 
-export const sizes = { label: 6, tiny: 6.5, small: 7.5, body: 8.5, large: 11, huge: 16, giant: 22 } as const;
+/**
+ * Base scale, used by the back and spell pages where text volume is the constraint.
+ *
+ * `huge` and `giant` are only ever used by the front page's stat and ability boxes, which is why
+ * they are set for arm's-length reading across a table rather than to match the body text.
+ */
+export const sizes = { label: 6, tiny: 6.5, small: 7.5, body: 8.5, large: 11, huge: 20, giant: 28 } as const;
+
+/**
+ * The front page has room the others do not, and it is the page read mid-turn. Everything on it is
+ * a step larger than the reference pages.
+ */
+export const front = { label: 7, small: 9, body: 10, section: 13 } as const;
 
 export const styles = StyleSheet.create({
   page: {

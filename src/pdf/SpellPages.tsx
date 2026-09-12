@@ -106,7 +106,7 @@ function SpellEntry({ spell, sheet }: { spell: Spell; sheet: CharacterSheet }) {
 
   // Condensed is the default: printed in full, a dozen spells swallow the whole booklet.
   const body =
-    sheet.sheetOptions.spellDetail === 'full'
+    sheet.sheetOptions.detail === 'full'
       ? { text: spell.text, truncated: false }
       : condenseParagraphs(spell.text, SPELL_TEXT_BUDGET);
 

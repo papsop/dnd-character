@@ -3,7 +3,7 @@ import type { CharacterSheet } from '../domain/schema/character';
 import { ABILITIES } from '../domain/schema/content';
 import { iconFor } from '../icons/paths';
 import { AbilityBox, Field, Icon, Label, Pips, ProficiencyDot, RuledLines, SectionHeader, StatBox, Table } from './components';
-import { colors, fonts, sizes, signed, styles } from './theme';
+import { colors, fonts, front, sizes, signed, styles } from './theme';
 
 const ABILITY_LABELS: Record<string, string> = {
   str: 'Strength',
@@ -37,8 +37,8 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
           {ABILITIES.map((ability) => (
             <View key={ability} style={[styles.row, { alignItems: 'center', paddingVertical: 0.75 }]}>
               <ProficiencyDot proficient={sheet.saves[ability].proficient} />
-              <Text style={{ flexGrow: 1, fontSize: sizes.small }}>{ABILITY_LABELS[ability]}</Text>
-              <Text style={{ fontFamily: fonts.bodyBold, fontSize: sizes.small }}>
+              <Text style={{ flexGrow: 1, fontSize: front.small }}>{ABILITY_LABELS[ability]}</Text>
+              <Text style={{ fontFamily: fonts.bodyBold, fontSize: front.small }}>
                 {signed(sheet.saves[ability].mod)}
               </Text>
             </View>
@@ -55,12 +55,12 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
             <View style={{ marginTop: 5 }}>
               <SectionHeader>Senses</SectionHeader>
               {defenses.senses.map((sense) => (
-                <Text key={sense} style={{ fontSize: sizes.small }}>
+                <Text key={sense} style={{ fontSize: front.small }}>
                   {sense}
                 </Text>
               ))}
               {defenses.resistances.length > 0 ? (
-                <Text style={{ fontSize: sizes.small }}>Resist: {defenses.resistances.join(', ')}</Text>
+                <Text style={{ fontSize: front.small }}>Resist: {defenses.resistances.join(', ')}</Text>
               ) : null}
             </View>
           ) : null}
@@ -89,7 +89,7 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
             </View>
 
             <View style={[styles.row, { gap: 4, marginTop: 4, alignItems: 'center' }]}>
-              <Text style={{ fontSize: sizes.small }}>
+              <Text style={{ fontSize: front.small }}>
                 Hit Dice {defenses.hitDice.count}d{defenses.hitDice.die}
               </Text>
               <Pips count={Math.min(defenses.hitDice.count, 20)} />
@@ -97,9 +97,9 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
 
             <View style={[styles.row, { gap: 8, marginTop: 3, alignItems: 'center' }]}>
               <Text style={styles.label}>Death Saves</Text>
-              <Text style={{ fontSize: sizes.tiny }}>Success</Text>
+              <Text style={{ fontSize: front.label }}>Success</Text>
               <Pips count={3} />
-              <Text style={{ fontSize: sizes.tiny }}>Failure</Text>
+              <Text style={{ fontSize: front.label }}>Failure</Text>
               <Pips count={3} />
             </View>
           </View>
@@ -115,6 +115,7 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
                 { header: 'Damage', width: 27 },
                 { header: 'Notes', width: 28 },
               ]}
+              minRows={9}
               rows={sheet.attacks.map((attack) => [
                 attack.name,
                 attack.attackBonus !== undefined
@@ -151,18 +152,18 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
           {sheet.skills.map((skill) => (
             <View key={skill.id} style={[styles.row, { alignItems: 'center', paddingVertical: 0.6 }]}>
               <ProficiencyDot proficient={skill.proficient} expertise={skill.expertise} />
-              <Text style={{ flexGrow: 1, fontSize: sizes.small }}>
+              <Text style={{ flexGrow: 1, fontSize: front.small }}>
                 {skill.name}
                 {skill.id === 'stealth' && defenses.stealthDisadvantage ? ' *' : ''}
               </Text>
-              <Text style={{ fontSize: sizes.tiny, color: colors.muted, marginRight: 4 }}>
+              <Text style={{ fontSize: front.label, color: colors.muted, marginRight: 4 }}>
                 {skill.ability.toUpperCase()}
               </Text>
-              <Text style={{ fontFamily: fonts.bodyBold, fontSize: sizes.small }}>{signed(skill.mod)}</Text>
+              <Text style={{ fontFamily: fonts.bodyBold, fontSize: front.small }}>{signed(skill.mod)}</Text>
             </View>
           ))}
           {defenses.stealthDisadvantage ? (
-            <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 2 }}>
+            <Text style={{ fontSize: front.label, color: colors.muted, marginTop: 2 }}>
               * Disadvantage from worn armour
             </Text>
           ) : null}
@@ -173,12 +174,12 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
               {sheet.masteries.map((mastery) => (
                 <View key={mastery.weaponName} style={[styles.row, { alignItems: 'center', gap: 3 }]}>
                   <Icon name={iconFor('mastery', mastery.masteryName.toLowerCase())} size={7} />
-                  <Text style={{ fontSize: sizes.small }}>
+                  <Text style={{ fontSize: front.small }}>
                     {mastery.weaponName} — {mastery.masteryName}
                   </Text>
                 </View>
               ))}
-              <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 1 }}>
+              <Text style={{ fontSize: front.label, color: colors.muted, marginTop: 1 }}>
                 Full text overleaf
               </Text>
             </View>
@@ -188,7 +189,7 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
           {conditions.length > 0 ? (
             <View style={{ marginTop: 6 }}>
               <SectionHeader>Conditions</SectionHeader>
-              <Text style={{ fontSize: sizes.tiny, color: colors.muted }}>
+              <Text style={{ fontSize: front.label, color: colors.muted }}>
                 {conditions.join(' · ')}
               </Text>
             </View>
@@ -196,7 +197,7 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
 
           <View style={{ marginTop: 6 }}>
             <SectionHeader>Notes</SectionHeader>
-            <RuledLines count={6} />
+            <RuledLines count={10} />
           </View>
         </View>
       </View>
@@ -247,8 +248,8 @@ function Header({ sheet }: { sheet: CharacterSheet }) {
 function PassiveRow({ label, value }: { label: string; value: number }) {
   return (
     <View style={[styles.row, { paddingVertical: 0.75 }]}>
-      <Text style={{ flexGrow: 1, fontSize: sizes.small }}>{label}</Text>
-      <Text style={{ fontFamily: fonts.bodyBold, fontSize: sizes.small }}>{value}</Text>
+      <Text style={{ flexGrow: 1, fontSize: front.small }}>{label}</Text>
+      <Text style={{ fontFamily: fonts.bodyBold, fontSize: front.small }}>{value}</Text>
     </View>
   );
 }
@@ -261,9 +262,9 @@ function SlotRow({ sheet }: { sheet: CharacterSheet }) {
   if (spellcasting.pact) {
     return (
       <View style={[styles.row, { gap: 4, alignItems: 'center' }]}>
-        <Text style={{ fontSize: sizes.small }}>Pact Magic — level {spellcasting.pact.level}</Text>
+        <Text style={{ fontSize: front.small }}>Pact Magic — level {spellcasting.pact.level}</Text>
         <Pips count={spellcasting.pact.count} />
-        <Text style={{ fontSize: sizes.label, color: colors.muted }}>short rest</Text>
+        <Text style={{ fontSize: front.label, color: colors.muted }}>short rest</Text>
       </View>
     );
   }
@@ -273,7 +274,7 @@ function SlotRow({ sheet }: { sheet: CharacterSheet }) {
       {spellcasting.slots.map((count, index) =>
         count > 0 ? (
           <View key={index} style={[styles.row, { alignItems: 'center', gap: 2 }]}>
-            <Text style={{ fontSize: sizes.tiny }}>L{index + 1}</Text>
+            <Text style={{ fontSize: front.label }}>L{index + 1}</Text>
             <Pips count={count} />
           </View>
         ) : null,
