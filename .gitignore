@@ -1,0 +1,20 @@
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+scripts/.cache/
+
+# local working notes, not published
+docs/
+CLAUDE.md
+tmp/
