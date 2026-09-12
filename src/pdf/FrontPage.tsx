@@ -2,6 +2,7 @@ import { Image, Text, View } from '@react-pdf/renderer';
 import type { CharacterSheet } from '../domain/schema/character';
 import { ABILITIES } from '../domain/schema/content';
 import { iconFor } from '../icons/paths';
+import { DetailBlock } from './BackPage';
 import { AbilityBox, Field, Icon, Label, Pips, ProficiencyDot, RuledLines, SectionHeader, StatBox, Table } from './components';
 import { colors, fonts, front, sizes, signed, styles } from './theme';
 
@@ -16,6 +17,7 @@ const ABILITY_LABELS: Record<string, string> = {
 
 export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; conditions: string[] }) {
   const { defenses, spellcasting } = sheet;
+  const show = sheet.sheetOptions.sections;
 
   return (
     <View style={styles.grow}>
@@ -186,7 +188,7 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
           ) : null}
 
           {/* Names only - a memory jog mid-combat, not a rules reference. */}
-          {conditions.length > 0 ? (
+          {show.conditions && conditions.length > 0 ? (
             <View style={{ marginTop: 6 }}>
               <SectionHeader>Conditions</SectionHeader>
               <Text style={{ fontSize: front.label, color: colors.muted }}>
@@ -195,12 +197,36 @@ export function FrontPage({ sheet, conditions }: { sheet: CharacterSheet; condit
             </View>
           ) : null}
 
-          <View style={{ marginTop: 6 }}>
-            <SectionHeader>Notes</SectionHeader>
-            <RuledLines count={10} />
-          </View>
+          {show.notes ? (
+            <View style={{ marginTop: 6 }}>
+              <SectionHeader>Notes</SectionHeader>
+              <RuledLines count={6} />
+            </View>
+          ) : null}
         </View>
       </View>
+
+      {/*
+        Who the character is, on the front where it gets read and added to during play. The back page
+        is a rules reference; roleplay notes were the one thing on it nobody turns the page for.
+      */}
+      {show.character ? (
+        <View style={{ marginTop: 8 }}>
+          <SectionHeader icon="ability-cha">Character</SectionHeader>
+          <View style={[styles.row, { gap: 10 }]}>
+            <View style={{ width: '50%' }}>
+              <DetailBlock label="Personality Trait" value={sheet.details.personalityTrait} />
+              <DetailBlock label="Ideal" value={sheet.details.ideal} />
+              <DetailBlock label="Bond" value={sheet.details.bond} />
+              <DetailBlock label="Flaw" value={sheet.details.flaw} />
+            </View>
+            <View style={{ width: '50%' }}>
+              <DetailBlock label="Appearance" value={sheet.details.appearance} lines={2} />
+              <DetailBlock label="Backstory" value={sheet.details.backstory} lines={5} />
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }

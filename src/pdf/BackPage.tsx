@@ -43,6 +43,7 @@ export function featureTextBudget(featureCount: number): number {
 
 export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize: number }) {
   const condensed = sheet.sheetOptions.detail === 'condensed';
+  const show = sheet.sheetOptions.sections;
   const budget = featureTextBudget(sheet.features.length + sheet.masteries.length);
 
   return (
@@ -97,72 +98,70 @@ export function BackPage({ sheet, bodySize }: { sheet: CharacterSheet; bodySize:
           <ProficiencyLine label="Tools" values={sheet.proficiencies.tools} />
           <ProficiencyLine label="Languages" values={sheet.proficiencies.languages} />
 
-          <View style={{ marginTop: 5 }}>
-            <SectionHeader icon="section-equipment">Equipment</SectionHeader>
-            {sheet.equipment.length > 0 ? (
-              <Table
-                columns={[
-                  { header: 'Item', width: 62 },
-                  { header: 'Qty', width: 14, align: 'right' },
-                  { header: 'lb', width: 24, align: 'right' },
-                ]}
-                rows={[
-                  ...sheet.equipment.map((line) => [
-                    // Helvetica is a standard PDF font with no box glyph, so mark it in words.
-                    line.equipped ? `${line.name} (worn)` : line.name,
-                    line.quantity,
-                    line.weight * line.quantity || '—',
-                  ]),
-                  ['Total', '', sheet.totalWeight],
-                ]}
-              />
-            ) : (
-              <RuledLines count={6} />
-            )}
-            {sheet.equipment.some((line) => line.equipped) ? (
-              <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 1 }}>
-                (worn) = currently equipped
-              </Text>
-            ) : null}
-          </View>
+          {show.equipment ? (
+            <View style={{ marginTop: 5 }}>
+              <SectionHeader icon="section-equipment">Equipment</SectionHeader>
+              {sheet.equipment.length > 0 ? (
+                <Table
+                  columns={[
+                    { header: 'Item', width: 62 },
+                    { header: 'Qty', width: 14, align: 'right' },
+                    { header: 'lb', width: 24, align: 'right' },
+                  ]}
+                  rows={[
+                    ...sheet.equipment.map((line) => [
+                      // Helvetica is a standard PDF font with no box glyph, so mark it in words.
+                      line.equipped ? `${line.name} (worn)` : line.name,
+                      line.quantity,
+                      line.weight * line.quantity || '—',
+                    ]),
+                    ['Total', '', sheet.totalWeight],
+                  ]}
+                />
+              ) : (
+                <RuledLines count={6} />
+              )}
+              {sheet.equipment.some((line) => line.equipped) ? (
+                <Text style={{ fontSize: sizes.label, color: colors.muted, marginTop: 1 }}>
+                  (worn) = currently equipped
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
 
-          <View style={{ marginTop: 5 }}>
-            <SectionHeader>Currency</SectionHeader>
-            <View style={[styles.row, { gap: 3 }]}>
-              {(['cp', 'sp', 'ep', 'gp', 'pp'] as const).map((coin) => (
-                <View key={coin} style={[styles.box, { flexGrow: 1, alignItems: 'center', paddingVertical: 2 }]}>
-                  <Label>{coin}</Label>
-                  <Text style={{ fontSize: sizes.small }}>{sheet.currency[coin]}</Text>
+          {show.currency ? (
+            <View style={{ marginTop: 5 }}>
+              <SectionHeader>Currency</SectionHeader>
+              <View style={[styles.row, { gap: 3 }]}>
+                {(['cp', 'sp', 'ep', 'gp', 'pp'] as const).map((coin) => (
+                  <View key={coin} style={[styles.box, { flexGrow: 1, alignItems: 'center', paddingVertical: 2 }]}>
+                    <Label>{coin}</Label>
+                    <Text style={{ fontSize: sizes.small }}>{sheet.currency[coin]}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {show.attunement ? (
+            <View style={{ marginTop: 5 }}>
+              <SectionHeader>Attunement</SectionHeader>
+              {[0, 1, 2].map((slot) => (
+                <View key={slot} style={[styles.row, { alignItems: 'center', gap: 3, marginBottom: 2 }]}>
+                  <Pips count={1} />
+                  <View style={{ flexGrow: 1, borderBottomWidth: 0.5, borderBottomColor: colors.faint, height: 10 }} />
                 </View>
               ))}
             </View>
-          </View>
-
-          <View style={{ marginTop: 5 }}>
-            <SectionHeader>Attunement</SectionHeader>
-            {[0, 1, 2].map((slot) => (
-              <View key={slot} style={[styles.row, { alignItems: 'center', gap: 3, marginBottom: 2 }]}>
-                <Pips count={1} />
-                <View style={{ flexGrow: 1, borderBottomWidth: 0.5, borderBottomColor: colors.faint, height: 10 }} />
-              </View>
-            ))}
-          </View>
-
-          <View style={{ marginTop: 5 }}>
-            <SectionHeader>Character</SectionHeader>
-            <DetailBlock label="Personality Trait" value={sheet.details.personalityTrait} />
-            <DetailBlock label="Ideal" value={sheet.details.ideal} />
-            <DetailBlock label="Bond" value={sheet.details.bond} />
-            <DetailBlock label="Flaw" value={sheet.details.flaw} />
-            <DetailBlock label="Appearance" value={sheet.details.appearance} lines={2} />
-            <DetailBlock label="Backstory" value={sheet.details.backstory} lines={4} />
-          </View>
+          ) : null}
 
           {/* Players scribble on the sheet all session. Whatever is left over becomes room to write. */}
-          <View style={{ marginTop: 5, flexGrow: 1 }}>
-            <SectionHeader>Notes</SectionHeader>
-            <RuledLines count={10} />
-          </View>
+          {show.notes ? (
+            <View style={{ marginTop: 5, flexGrow: 1 }}>
+              <SectionHeader>Notes</SectionHeader>
+              <RuledLines count={14} />
+            </View>
+          ) : null}
         </View>
       </View>
     </View>
@@ -215,7 +214,7 @@ function ProficiencyLine({ label, values }: { label: string; values: string[] })
 }
 
 /** Prints what the player wrote, or ruled lines to write on if they left it blank. */
-function DetailBlock({ label, value, lines = 1 }: { label: string; value: string | undefined; lines?: number }) {
+export function DetailBlock({ label, value, lines = 1 }: { label: string; value: string | undefined; lines?: number }) {
   if (value && value.trim() !== '') {
     return (
       <View style={{ marginBottom: 2 }}>

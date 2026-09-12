@@ -23,7 +23,17 @@ export function newCharacter(): CharacterBuild {
     equipment: [],
     currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
     hp: {},
-    sheetOptions: { detail: 'condensed' },
+    sheetOptions: {
+      detail: 'condensed',
+      sections: {
+        equipment: false,
+        currency: false,
+        attunement: true,
+        conditions: true,
+        character: true,
+        notes: true,
+      },
+    },
     details: {},
   };
 }

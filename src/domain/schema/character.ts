@@ -107,9 +107,25 @@ export const characterBuildSchema = z.object({
          * page. Condensed is the default because a character sheet is a play aid, not a rulebook.
          */
         detail: z.enum(['condensed', 'full']).default('condensed'),
+
+        /**
+         * Which optional sections get printed. Tables vary: some track kit and coin meticulously,
+         * others never open the equipment list once play starts, and printing a section nobody uses
+         * costs the space that a section they do use needs.
+         */
+        sections: z
+          .object({
+            equipment: z.boolean().default(false),
+            currency: z.boolean().default(false),
+            attunement: z.boolean().default(true),
+            conditions: z.boolean().default(true),
+            character: z.boolean().default(true),
+            notes: z.boolean().default(true),
+          })
+          .default({}),
       }),
     )
-    .default({ detail: 'condensed' }),
+    .default({ detail: 'condensed', sections: {} }),
 
   notes: z.string().optional(),
 });

@@ -163,6 +163,45 @@ export function ReviewStep() {
 
         <fieldset className="mt-4">
           <legend className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+            Include on the sheet
+          </legend>
+          <div className="mt-1 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+            {(
+              [
+                ['character', 'Character traits & backstory', 'Printed on the front page.'],
+                ['conditions', 'Conditions reference', 'Names only, as a memory jog.'],
+                ['equipment', 'Equipment list', 'What you carry, with weights.'],
+                ['currency', 'Currency', 'CP / SP / EP / GP / PP boxes.'],
+                ['attunement', 'Attunement slots', 'Three ruled slots.'],
+                ['notes', 'Notes', 'Ruled lines to write on.'],
+              ] as const
+            ).map(([key, label, hint]) => (
+              <label key={key} className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={sheet.sheetOptions.sections[key]}
+                  onChange={(event) =>
+                    update((draft) => ({
+                      ...draft,
+                      sheetOptions: {
+                        ...draft.sheetOptions,
+                        sections: { ...draft.sheetOptions.sections, [key]: event.target.checked },
+                      },
+                    }))
+                  }
+                />
+                <span>
+                  {label}
+                  <span className="text-ink-500 block text-xs">{hint}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-4">
+          <legend className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
             Rules text on the sheet
           </legend>
           <div className="mt-1 flex flex-wrap gap-2">
