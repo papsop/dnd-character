@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PDF preview</title>
+    <style>
+      body { margin: 0; background: #555; font-family: system-ui, sans-serif; }
+      #pages canvas { display: block; margin: 8px auto; box-shadow: 0 2px 12px rgba(0,0,0,.5); background: #fff; }
+      .bar { position: sticky; top: 0; background: #222; color: #eee; padding: 6px; z-index: 2; }
+      a { color: #9cf; margin-right: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="bar" id="bar"></div>
+    <div id="pages"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      const FILES = ['fighter-1', 'wizard-5', 'fighter-20', 'wizard-20', 'warlock-5'];
+      const bar = document.getElementById('bar');
+      bar.innerHTML = FILES.map((f) => `<a href="?f=${f}">${f}</a>`).join('') ;
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+      const params = new URLSearchParams(location.search);
+      const file = params.get('f') || 'fighter-1';
+      const scale = Number(params.get('s') || 1.4);
+      const only = params.get('p') ? Number(params.get('p')) : null;
+
+      pdfjsLib.getDocument(`./${file}.pdf`).promise.then(async (pdf) => {
+        bar.innerHTML += ` — ${file}: ${pdf.numPages} pages`;
+        const container = document.getElementById('pages');
+        bar.innerHTML += ' — pages: ' + Array.from({ length: pdf.numPages }, (_, i) =>
+          `<a href="?f=${file}&s=${scale}&p=${i + 1}">${i + 1}</a>`).join(' ');
+        for (let n = 1; n <= pdf.numPages; n += 1) {
+          if (only !== null && n !== only) continue;
+          const page = await pdf.getPage(n);
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          container.appendChild(canvas);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        }
+        document.title = `ready ${file}`;
+      });
+    </script>
+  </body>
+</html>

@@ -52,6 +52,32 @@ describe('content pack integrity', () => {
   });
 });
 
+describe('printable text', () => {
+  const allText = (): string[] => {
+    const out: string[] = [];
+    const walk = (value: unknown): void => {
+      if (typeof value === 'string') out.push(value);
+      else if (Array.isArray(value)) value.forEach(walk);
+      else if (value && typeof value === 'object') Object.values(value).forEach(walk);
+    };
+    walk(contentPack);
+    return out;
+  };
+
+  it('carries no Markdown bold markers - they would print literally on the sheet', () => {
+    expect(allText().filter((text) => text.includes('**'))).toEqual([]);
+  });
+
+  it('carries no Markdown italic markers', () => {
+    expect(allText().filter((text) => /_[A-Za-z][^_]*_/.test(text))).toEqual([]);
+  });
+
+  it('carries no PDF line-break hyphenation artifacts', () => {
+    const broken = allText().filter((text) => /[A-Za-z]- [a-z]/.test(text));
+    expect(broken).toEqual([]);
+  });
+});
+
 describe('2024 ruleset markers', () => {
   it('gives species no ability score increases - those moved to backgrounds', () => {
     for (const species of contentPack.species) {

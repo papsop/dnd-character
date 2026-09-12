@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { downloadSheet } from '../../pdf/download';
 import { Hint, SectionHeading } from '../../components/ui';
 import { Icon } from '../../components/Icon';
 import { useSheet } from '../../store/characterStore';
@@ -7,6 +9,17 @@ import { ABILITIES } from '../../domain/schema/content';
 export function ReviewStep() {
   const sheet = useSheet();
   const blocking = sheet.issues.length;
+  const [status, setStatus] = useState<'idle' | 'working' | 'failed'>('idle');
+
+  const download = async () => {
+    setStatus('working');
+    try {
+      await downloadSheet(sheet);
+      setStatus('idle');
+    } catch {
+      setStatus('failed');
+    }
+  };
 
   return (
     <section className="space-y-6">
@@ -133,12 +146,25 @@ export function ReviewStep() {
       <div className="border-parchment-200 dark:border-ink-700 rounded-lg border p-4">
         <button
           type="button"
-          disabled={blocking > 0}
+          disabled={blocking > 0 || status === 'working'}
+          onClick={download}
           className="bg-accent-500 text-parchment-50 rounded px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {blocking > 0 ? `Download PDF (${blocking} to fix)` : 'Download PDF'}
+          {status === 'working'
+            ? 'Building your sheet…'
+            : blocking > 0
+              ? `Download PDF (${blocking} to fix)`
+              : 'Download PDF'}
         </button>
-        <p className="text-ink-500 mt-2 text-xs">The printable sheet arrives in the next phase.</p>
+        <p className="text-ink-500 mt-2 text-xs">
+          Two pages to print double-sided, plus a spell reference if you cast.
+        </p>
+        {status === 'failed' ? (
+          <p className="text-accent-500 mt-2 text-sm">
+            Something went wrong building the PDF. Try again, and if it keeps failing the browser
+            console will say why.
+          </p>
+        ) : null}
       </div>
     </section>
   );

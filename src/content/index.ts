@@ -40,7 +40,10 @@ const raw = {
  * meaningful chunk of startup time. Development and tests re-parse, so a hand-edit to a JSON file
  * fails immediately instead of surfacing as a wrong number on a printed sheet.
  */
-export const contentPack: ContentPack = import.meta.env.DEV
+// `import.meta.env` only exists under Vite; scripts and tests import this module directly.
+const isDev = import.meta.env?.DEV ?? true;
+
+export const contentPack: ContentPack = isDev
   ? contentPackSchema.parse(raw)
   : (raw as unknown as ContentPack);
 

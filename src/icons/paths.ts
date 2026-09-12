@@ -93,7 +93,7 @@ export const iconPaths = {
   'mastery-vex': 'M12 3l2.5 6H21l-5.2 4 2 6.5L12 16l-5.8 3.5 2-6.5L3 9h6.5z',
 
   // --- Sheet sections --------------------------------------------------------
-  'section-attacks': 'M3 2l7 10-2 2L2 6zM21 2l-7 10 2 2 6-8zM9 15l3 3 3-3 2 2-5 5-5-5z',
+  'section-attacks': 'M2 3h4l14 14v4h-4L2 7zM22 3v4L8 21H4v-4L18 3z',
   'section-defenses': 'M12 2 4 5v7c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V5z',
   'section-equipment': 'M8 6V5a4 4 0 0 1 8 0v1h3l1 16H4L5 6zm2 0h4V5a2 2 0 0 0-4 0z',
   'section-features': 'M6 2h12a2 2 0 0 1 2 2v18l-4-2-4 2-4-2-4 2V4a2 2 0 0 1 2-2zm2 5h8v2H8zm0 4h8v2H8z',

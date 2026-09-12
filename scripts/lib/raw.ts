@@ -33,7 +33,17 @@ export function normalizeText(value: string): string {
       text = text.split(from).join(to);
     }
   }
-  return text.replace(/([A-Za-z])- ([a-z])/g, '$1$2');
+  return (
+    text
+      // The source carries inline Markdown bold ("**Two Cantrips.**"). Nothing downstream renders
+      // Markdown, so left alone the asterisks print literally on the character sheet.
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      // One entry upstream has an unterminated marker, so sweep up any stragglers.
+      .replace(/\*\*/g, '')
+      // The source also uses underscore italics for inline headings ("_Enlarge._").
+      .replace(/_([A-Za-z][^_]*?)_/g, '$1')
+      .replace(/([A-Za-z])- ([a-z])/g, '$1$2')
+  );
 }
 
 /** Rules text arrives as one blob with newlines. The schema wants paragraphs. */

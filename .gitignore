@@ -18,3 +18,8 @@ scripts/.cache/
 docs/
 CLAUDE.md
 tmp/
+
+# generated PDF previews; the viewer page itself is committed
+public/preview/*.pdf
+
+tmp/
