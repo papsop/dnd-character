@@ -15,4 +15,5 @@ export const SRD_ATTRIBUTION_SHORT =
 export const NOT_AFFILIATED =
   'Not affiliated with or endorsed by Wizards of the Coast. All artwork is original.';
 
-export const APP_NAME = 'Character Forge';
+export const APP_NAME = 'D&D Toolkit';
+

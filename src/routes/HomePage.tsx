@@ -1,22 +1,5 @@
 import { Link } from 'react-router-dom';
-
+import './item-forge.css';
 export function HomePage() {
-  return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <h1 className="font-display text-4xl">Build a character</h1>
-        <p className="text-ink-500 max-w-prose">
-          Guided creation against the 2024 rules, checked as you go, ending in a print-ready
-          double-sided A4 sheet. Everything runs in your browser - no account, nothing uploaded.
-        </p>
-      </div>
-
-      <Link
-        to="/build/class"
-        className="bg-accent-500 text-parchment-50 inline-block rounded px-4 py-2 font-semibold"
-      >
-        Start building
-      </Link>
-    </section>
-  );
+  return <section className="toolkit-home"><p className="eyebrow">A little preparation. A lot of adventure.</p><h1>Your next session,<br /><em>beautifully prepared.</em></h1><p className="home-intro">Characters with a story. Treasures worth discovering. Thoughtful tools for the people around your table.</p><div className="tool-grid"><Link to="/build/class" className="tool-tile"><span className="eyebrow">01 / THE ADVENTURER</span><h2>Build a character</h2><p>A guided journey through the 2024 rules, from your first choice to a printable character sheet.</p><strong>Open character builder →</strong></Link><Link to="/items" className="tool-tile featured"><span className="eyebrow">02 / THE TREASURE ROOM</span><h2>Forge something special</h2><p>Bring homebrew items to life with illustrated cards. Gather a sheet of treasures, print, and cut.</p><strong>Open Item Forge →</strong></Link></div><p className="local-note">Made for your table. Saved in this browser. No account needed.</p></section>;
 }

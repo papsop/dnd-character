@@ -2,6 +2,7 @@ import { createHashRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { BuildLayout } from './routes/BuildLayout';
 import { HomePage } from './routes/HomePage';
+import { ItemForge } from './routes/ItemForge';
 import { IconsPage } from './routes/IconsPage';
 import { NotFoundPage } from './routes/NotFoundPage';
 import { AbilitiesStep } from './routes/steps/AbilitiesStep';
@@ -21,6 +22,7 @@ const router = createHashRouter(
       element: <Layout />,
       children: [
         { path: '/', element: <HomePage /> },
+        { path: '/items', element: <ItemForge /> },
         {
           path: '/build',
           element: <BuildLayout />,
@@ -47,3 +49,4 @@ const router = createHashRouter(
 export function App() {
   return <RouterProvider router={router} future={{ v7_startTransition: true }} />;
 }
+

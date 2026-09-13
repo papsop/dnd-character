@@ -9,7 +9,7 @@ export function Layout() {
           <Link to="/" className="font-display text-accent-500 dark:text-accent-400 text-xl">
             {APP_NAME}
           </Link>
-          <span className="text-ink-500 text-xs">2024 rules</span>
+          <nav className="ml-auto flex gap-4 text-sm" aria-label="Main navigation"><Link to="/build/class">Characters</Link><Link to="/items">Item Forge</Link></nav>
         </div>
       </header>
 
@@ -26,3 +26,4 @@ export function Layout() {
     </div>
   );
 }
+
