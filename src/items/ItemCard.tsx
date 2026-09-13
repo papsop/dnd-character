@@ -1,6 +1,7 @@
 import { artwork, cardPalette, type ForgeItem } from './catalog';
 
-export function Artwork({ art, eager = false }: { art: number; eager?: boolean }) {
+export function Artwork({ art, customSrc, eager = false }: { art: number; customSrc?: string | undefined; eager?: boolean }) {
+  if (customSrc) return <img className="item-art" src={customSrc} alt="User uploaded artwork" loading={eager ? 'eager' : 'lazy'} />;
   const entry = artwork[art] ?? artwork[0];
   if (!entry) return null;
   return <img className="item-art" src={`${import.meta.env.BASE_URL}art/equipment/${entry.id}.png`} alt={entry.name} loading={eager ? 'eager' : 'lazy'} />;
@@ -12,7 +13,7 @@ export function ItemCard({ item, ink = false }: { item: ForgeItem; ink?: boolean
       <div className="card-art-stage">
         <span className="card-rarity">{item.rarity}</span>
         <span className="card-star" aria-hidden="true">✦</span>
-        <Artwork art={item.art} eager />
+        <Artwork art={item.art} customSrc={item.customArt} eager />
         <span className="art-panel-rule" aria-hidden="true">◆</span>
       </div>
       <div className="card-copy">

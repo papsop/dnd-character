@@ -50,6 +50,7 @@ export const itemSchema = z.object({
   rarity: z.enum(RARITIES), art: z.number().int().min(0).max(artwork.length - 1),
   text: z.string().max(420), attunement: z.boolean(), quantity: z.number().int().min(0).max(18),
   background: z.enum(BACKGROUNDS).default('By rarity'), source: z.enum(['homebrew', 'srd']).default('homebrew'),
+  customArt: z.string().optional(),
 });
 export type ForgeItem = z.infer<typeof itemSchema>;
 export const STORAGE_KEY = 'dnd-toolkit/items-prototype/v1';

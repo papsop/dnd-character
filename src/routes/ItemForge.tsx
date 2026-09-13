@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ClipboardEvent } from 'react';
 import { Field, inputClass } from '../components/ui';
 import { Artwork, ItemCard } from '../items/ItemCard';
 import {
@@ -15,9 +15,11 @@ export function ItemForge() {
   const [overflow, setOverflow] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [printArtReady, setPrintArtReady] = useState(false);
-  const [artFilter, setArtFilter] = useState<ItemType | 'All'>('All');
+  const [artFilter, setArtFilter] = useState<ItemType | 'All' | 'User images'>('All');
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('all');
+  const [customImageName, setCustomImageName] = useState('');
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ItemType | 'All'>('All');
   const forgeRef = useRef<HTMLElement>(null);
   const item = items.find(i => i.id === selected) ?? items[0] ?? samples[0];
@@ -61,6 +63,25 @@ export function ItemForge() {
     (typeFilter === 'All' || t.type === typeFilter) &&
     t.name.toLowerCase().includes(search.toLowerCase().trim()));
   const visibleArt = artwork.map((a, index) => ({ ...a, index })).filter(a => artFilter === 'All' || a.type === artFilter);
+  const userImages = items.filter(i => i.customArt).map(i => ({ id: `user-${i.id}`, name: i.name || 'User image', src: i.customArt ?? '' }));
+  const addImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = typeof reader.result === 'string' ? reader.result : undefined;
+      if (src) { setCustomImageName(file.name); update({ customArt: src }); }
+    };
+    reader.readAsDataURL(file);
+  };
+  const uploadImage = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) addImageFile(file);
+    event.target.value = '';
+  };
+  const pasteImage = (event: ClipboardEvent<HTMLDivElement>) => {
+    const file = Array.from(event.clipboardData.files).find(candidate => candidate.type.startsWith('image/'));
+    if (file) { event.preventDefault(); addImageFile(file); }
+  };
 
   function addItem(template?: ForgeItem) {
     if (items.length >= 100) return;
@@ -127,7 +148,7 @@ export function ItemForge() {
             <p className="eyebrow">YOUR COLLECTION <span>{items.length}</span></p>
             <div className="library-list">{items.map(i => (
               <button key={i.id} className={`library-item ${i.id === item.id ? 'active' : ''}`} onClick={() => setSelected(i.id)}>
-                <div className="library-art"><Artwork art={i.art} /></div>
+                <div className="library-art"><Artwork art={i.art} customSrc={i.customArt} /></div>
                 <span><strong>{i.name || 'Unnamed treasure'}</strong><small>{i.type} · {i.rarity}</small></span>
               </button>
             ))}</div>
@@ -149,11 +170,18 @@ export function ItemForge() {
             <label className="check-label"><input type="checkbox" checked={item.attunement} onChange={e => update({ attunement: e.target.checked })} /> Requires attunement</label>
             <Field label="Artwork background"><select className={inputClass} value={item.background} onChange={e => update({ background: e.target.value as ForgeItem['background'] })}>{BACKGROUNDS.map(b => <option key={b}>{b}</option>)}</select></Field>
             <p className="field-help">By rarity: parchment, forest green, arcane blue, amethyst, or legendary gold.</p>
-            <div className="art-picker-heading"><p className="eyebrow">CHOOSE AN ILLUSTRATION</p><select aria-label="Filter illustrations" className={inputClass} value={artFilter} onChange={e => setArtFilter(e.target.value as ItemType | 'All')}><option>All</option>{ITEM_TYPES.map(t => <option key={t}>{t}</option>)}</select></div>
+            <div className="art-picker-heading"><p className="eyebrow">CHOOSE AN ILLUSTRATION</p><select aria-label="Filter illustrations" className={inputClass} value={artFilter} onChange={e => setArtFilter(e.target.value as ItemType | 'All' | 'User images')}><option>All</option><option value="User images">User images</option>{ITEM_TYPES.map(t => <option key={t}>{t}</option>)}</select></div>
+            <div className={`user-image-dropzone ${isDraggingImage ? 'dragging' : ''}`} tabIndex={0} onPaste={pasteImage} onDragOver={event => { event.preventDefault(); setIsDraggingImage(true); }} onDragLeave={() => setIsDraggingImage(false)} onDrop={event => { event.preventDefault(); setIsDraggingImage(false); const file = Array.from(event.dataTransfer.files).find(candidate => candidate.type.startsWith('image/')); if (file) addImageFile(file); }}>
+              <span className="dropzone-icon" aria-hidden="true">✦</span>
+              <strong>Drop in or paste an image</strong>
+              <span>{customImageName || 'Drag an image here, press Ctrl/Cmd + V, or choose a file'}</span>
+              <label className="upload-image-button">Choose image<input aria-label="Add your image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={uploadImage} /></label>
+            </div>
             <div className="art-picker">{visibleArt.map(a => (
-              <button key={a.id} aria-label={a.name} title={a.name} aria-pressed={item.art === a.index} onClick={() => update({ art: a.index })}><Artwork art={a.index} /><span>{a.name}</span></button>
+              <button key={a.id} aria-label={a.name} title={a.name} aria-pressed={!item.customArt && item.art === a.index} onClick={() => update({ art: a.index, customArt: undefined })}><Artwork art={a.index} /><span>{a.name}</span></button>
             ))}</div>
-            <p className="field-help">{visibleArt.length} illustrations · Each item is a separate transparent image.</p>
+            {artFilter === 'User images' && <div className="art-picker user-art-picker">{userImages.map(a => <button key={a.id} aria-label={a.name} title={a.name} aria-pressed={item.customArt === a.src} onClick={() => update({ customArt: a.src })}><img className="item-art" src={a.src} alt={a.name} /><span>{a.name}</span></button>)}</div>}
+            <p className="field-help">{artFilter === 'User images' ? `${userImages.length} user images` : `${visibleArt.length} illustrations`} · Your uploads stay in this browser.</p>
           </div>
           <div className="live-preview">
             <p className="eyebrow">AT YOUR TABLE</p><ItemCard item={item} />
